@@ -30,3 +30,215 @@
         .product-status { font-size: 13px; margin-top: 3px; }
         .status-in { color: var(--green-stock); }
         .status-out { color: var(--apple-red); font-weight: bold; }
+        .out-of-stock-text { text-decoration: line-through; color: var(--gray-out); }
+        
+        .action-area { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+        button { border: none; background-color: var(--apple-red); color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; transition: 0.2s; font-size: 14px; }
+        button:hover { background-color: #B93C38; }
+        button:disabled { background-color: var(--gray-out); cursor: not-allowed; }
+        
+        .dips-info { background-color: #F8F5EE; padding: 12px; border-radius: 8px; font-size: 14px; color: var(--text-dark); margin-bottom: 10px; border-left: 4px solid var(--apple-red); }
+        
+        /* ฟอร์มข้อมูลลูกค้า */
+        .customer-form { background-color: #F8F5EE; padding: 20px; border-radius: 8px; margin-top: 30px; border: 1px solid var(--border-color); }
+        .customer-form h3 { color: var(--apple-red); margin-bottom: 15px; font-size: 18px; text-align: center; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        .input-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; font-family: 'Sarabun', sans-serif; }
+        .input-group input:focus { outline: none; border-color: var(--apple-red); }
+
+        .footer-notes { margin-top: 30px; padding: 20px; background-color: var(--bg-cream); border-radius: 8px; font-size: 14px; }
+        .footer-notes span { color: var(--apple-red); font-weight: bold; }
+        
+        /* แถบด้านล่าง */
+        .cart-bar { position: fixed; bottom: 0; left: 0; width: 100%; background-color: white; box-shadow: 0 -4px 15px rgba(0,0,0,0.08); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
+        .cart-bar .container-inner { max-width: 800px; margin: 0 auto; width: 100%; display: flex; justify-content: space-between; align-items: center; }
+        .cart-info { font-weight: bold; color: var(--apple-red); font-size: 16px; }
+        .copy-btn { background-color: var(--text-dark); font-size: 16px; padding: 10px 20px; border-radius: 25px; }
+        .copy-btn:hover { background-color: #111; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>รายการผลไม้พร้อมส่งวันนี้</h1>
+            <p>เลือกสินค้าที่ต้องการ แล้วกดปุ่มสั่งซื้อผ่านแชทได้เลยนะคะ</p>
+            <div class="contact-buttons">
+                <a href="https://lin.ee/oli8RVq" target="_blank" class="btn-line">💬 สั่งผ่าน LINE</a>
+                <a href="http://m.me/poksaipaak" target="_blank" class="btn-fb">💬 สั่งผ่าน Messenger</a>
+            </div>
+        </div>
+        
+        <div class="note-box">‼️ ราคาและปริมาณของผลไม้ อาจปรับขึ้น-ลง ตามกลไกราคาในตลาดนะคะ ‼️</div>
+        
+        <div id="menu-container">
+            <div style="text-align:center; padding:40px;">กำลังโหลดข้อมูลผลไม้สดๆ... ⏳</div>
+        </div>
+
+        <div class="customer-form">
+            <h3>📝 ข้อมูลสำหรับจัดส่ง</h3>
+            <div class="input-group">
+                <label>ชื่อ-นามสกุล / ชื่อเล่น:</label>
+                <input type="text" id="cust-name" placeholder="ระบุชื่อลูกค้า">
+            </div>
+            <div class="input-group">
+                <label>เบอร์โทรศัพท์ติดต่อ:</label>
+                <input type="tel" id="cust-phone" placeholder="ระบุเบอร์โทรศัพท์">
+            </div>
+        </div>
+        
+        <div class="footer-notes">
+            <p>🎀 จัดเซ็ตเยี่ยมไข้ ของขวัญ ของฝาก ผูกโบว์ เขียนการ์ด ลูกค้าแจ้งได้เลย ร้านมีบริการให้ค่ะ</p>
+            <p>🛵 มีบริการส่งด้วยไรเดอร์ค่ะ กรณีให้ร้านส่งจะมีเป็นรอบ รบกวนลูกค้าสั่งล่วงหน้านะคะ</p>
+            <p><span>#ร้านส่งขั้นต่ำ150฿</span> <span>#ครบ200฿ส่งฟรีโซนในเมือง</span> (ไม่เกิน 7 กิโลเมตร)</p>
+            <p style="color: var(--apple-red); margin-top: 5px;">* ออกไปรอบนอกหรือใกล้เคียงเลี่ยงเมืองมีค่าจัดส่งเริ่ม 20฿ ค่ะ</p>
+        </div>
+    </div>
+
+    <div class="cart-bar">
+        <div class="container-inner">
+            <div class="cart-info">รวมสั่งซื้อ: <span id="total-qty">0</span> กล่อง</div>
+            <button class="copy-btn" onclick="copyOrder()">📋 คัดลอกรายการสั่งซื้อ</button>
+        </div>
+    </div>
+
+    <script>
+        // 🌟 ใส่ลิงก์ API ของคุณให้เรียบร้อยแล้ว 🌟
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby78IpT7zinQJ792XxNxPjtyedTCUs1BJHnsvUxPnd2y5H6zkB_kR2zZV6fY0OVsOCe/exec'; 
+        
+        let menuData = []; 
+        let cart = {};
+
+        async function loadData() {
+            try {
+                const response = await fetch(SCRIPT_URL + '?action=getData');
+                menuData = await response.json();
+                renderMenu();
+            } catch (error) {
+                document.getElementById('menu-container').innerHTML = '<div style="text-align:center; padding:20px; color:red;">โหลดข้อมูลไม่สำเร็จ กรุณารีเฟรชหน้าเว็บ</div>';
+            }
+        }
+        
+        function renderMenu() {
+            const container = document.getElementById('menu-container');
+            container.innerHTML = '';
+            
+            // เรียงหมวดหมู่ราคา
+            const categories = [50, 60, 80, 90, 100];
+
+            categories.forEach(cat => {
+                const items = menuData.filter(item => item.category === cat);
+                if (items.length > 0) {
+                    const catTitle = document.createElement('div');
+                    catTitle.className = 'category-title';
+                    catTitle.innerText = `🍓 ---- กล่องละ ${cat}฿ ---- 🍓`;
+                    container.appendChild(catTitle);
+
+                    if(cat === 50) {
+                        const dipsNote = document.createElement('div');
+                        dipsNote.className = 'dips-info';
+                        dipsNote.innerHTML = `<strong>* ตัวเลือกน้ำจิ้มมะม่วง:</strong> พริกเกลือนัวร์(ฟรี), พริกเกลือกะปิแห้ง(ฟรี), พริกเกลือลาวแซ่บ(ฟรี), น้ำจิ้มบ๊วยเค็ม(ฟรี) <br><em style="color:#888;">เพิ่ม กะปิปลาร้า (+20฿), กะปิหวาน (+20฿) *โปรดพิมพ์ระบุตอนสั่งซื้อ*</em>`;
+                        container.appendChild(dipsNote);
+                    }
+
+                    items.forEach(item => {
+                        const cartQty = cart[item.id] || 0;
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'product-item';
+                        
+                        const statusHTML = item.available 
+                            ? `<div class="product-status status-in">✓ มีพร้อมส่ง</div>`
+                            : `<div class="product-status status-out">✗ สินค้าหมดชั่วคราว</div>`;
+
+                        itemDiv.innerHTML = `
+                            <div class="product-info">
+                                <div class="product-name ${!item.available ? 'out-of-stock-text' : ''}">✔️ ${item.name}</div>
+                                ${statusHTML}
+                            </div>
+                            <div class="action-area">
+                                ${cartQty > 0 ? `
+                                    <button onclick="updateQty('${item.id}', -1)" style="background:#888; padding: 8px 12px;">-</button>
+                                    <span style="font-weight:bold; width: 25px; text-align:center; font-size: 16px;">${cartQty}</span>
+                                ` : ''}
+                                <button onclick="updateQty('${item.id}', 1)" ${!item.available ? 'disabled' : ''}>
+                                    ${cartQty > 0 ? '+ เพิ่ม' : 'ใส่ตะกร้า'}
+                                </button>
+                            </div>
+                        `;
+                        container.appendChild(itemDiv);
+                    });
+                }
+            });
+            updateCartBar();
+        }
+
+        function updateQty(id, change) {
+            if (!cart[id]) cart[id] = 0;
+            cart[id] += change;
+            if (cart[id] <= 0) delete cart[id];
+            renderMenu();
+        }
+
+        function updateCartBar() {
+            let totalQty = 0;
+            for (const [id, qty] of Object.entries(cart)) {
+                totalQty += qty; 
+            }
+            document.getElementById('total-qty').innerText = totalQty;
+        }
+
+        function copyOrder() {
+            // เช็คว่ามีของในตะกร้าไหม
+            if(Object.keys(cart).length === 0) { 
+                alert("ตะกร้ายังว่างเปล่าอยู่เลยค่ะ อย่าลืมเลือกผลไม้สดๆ ก่อนนะคะ 🥰"); 
+                return; 
+            }
+
+            // เช็คว่ากรอกชื่อและเบอร์โทรหรือยัง
+            const custName = document.getElementById('cust-name').value.trim();
+            const custPhone = document.getElementById('cust-phone').value.trim();
+
+            if(custName === "" || custPhone === "") {
+                alert("รบกวนคุณลูกค้ากรอก 'ชื่อ' และ 'เบอร์โทรศัพท์' ให้ครบถ้วนก่อนกดคัดลอกนะคะ 🙏");
+                return;
+            }
+
+            // สร้างข้อความ
+            let orderText = "📝 รายการสั่งซื้อผลไม้:\n";
+            orderText += `👤 ชื่อลูกค้า: ${custName}\n`;
+            orderText += `📞 เบอร์โทร: ${custPhone}\n`;
+            orderText += "------------------------\n";
+            
+            for (const [id, qty] of Object.entries(cart)) {
+                const product = menuData.find(p => p.id === id);
+                if(product) {
+                    orderText += `- ${product.name} x ${qty} กล่อง\n`;
+                }
+            }
+            
+            orderText += "------------------------\n";
+            orderText += "(หากมีน้ำจิ้มที่ต้องการ หรือหมายเหตุเพิ่มเติม พิมพ์ต่อท้ายได้เลยนะคะ)";
+            
+            // คัดลอกลง Clipboard
+            navigator.clipboard.writeText(orderText).then(() => {
+                alert("✅ คัดลอกรายการสั่งซื้อเรียบร้อยแล้ว!\n\nคุณลูกค้าสามารถกดปุ่ม LINE หรือ Messenger ด้านบน เพื่อนำไป 'วาง' ในแชทได้เลยค่ะ");
+            });
+        }
+
+        // เริ่มโหลดข้อมูล
+        loadData();
+
+        // รีเฟรชข้อมูลเบื้องหลังทุก 15 วินาที
+        setInterval(() => {
+            fetch(SCRIPT_URL + '?action=getData')
+            .then(res => res.json())
+            .then(data => {
+                menuData = data; 
+                renderMenu();
+            })
+            .catch(err => console.log("อัปเดตข้อมูลเบื้องหลังล้มเหลว"));
+        }, 15000); 
+
+    </script>
+</body>
+</html>
