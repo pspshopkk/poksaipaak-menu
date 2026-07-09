@@ -48,6 +48,17 @@
         button { border: none; background-color: var(--apple-red); color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; transition: 0.2s; font-size: 14px; }
         button:disabled { background-color: var(--gray-out); cursor: not-allowed; }
 
+        /* สไตล์ป๊อปอัพเลือกน้ำจิ้ม (Modal) */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal-content { background: white; padding: 20px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); animation: fadeIn 0.2s ease-out; }
+        .modal-title { font-size: 16px; font-weight: bold; color: var(--apple-red); margin-bottom: 5px; text-align: center; }
+        .modal-subtitle { font-size: 14px; color: #666; margin-bottom: 15px; text-align: center; }
+        .sauce-option-btn { display: block; width: 100%; padding: 12px; margin-bottom: 8px; border: 1px solid var(--border-color); border-radius: 8px; text-align: left; background: #FFFDF9; font-size: 15px; font-family: 'Sarabun'; cursor: pointer; transition: 0.1s; color: var(--text-dark); }
+        .sauce-option-btn:hover { background: var(--apple-red-light); border-color: var(--apple-red); }
+        .sauce-option-btn span { color: var(--apple-red); font-weight: bold; float: right; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
         .footer-notes { margin-top: 40px; padding: 20px; background-color: var(--bg-cream); border-radius: 8px; font-size: 14px; border-top: 1px solid var(--border-color); }
         .footer-notes span { color: var(--apple-red); font-weight: bold; }
         
@@ -99,6 +110,22 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="sauce-modal">
+        <div class="modal-content">
+            <div class="modal-title" id="modal-product-name">ชื่อผลไม้</div>
+            <div class="modal-subtitle">🎁 กรุณาเลือกน้ำจิ้มแถมฟรีสำหรับ <span id="modal-box-index" style="font-weight:bold; color:var(--apple-red);">1</span>:</div>
+            
+            <button class="sauce-option-btn" onclick="selectSauceOption('พริกเกลือนัวร์ (ฟรี)')">พริกเกลือนัวร์ <span>(ฟรี)</span></button>
+            <button class="sauce-option-btn" onclick="selectSauceOption('พริกเกลือกะปิแห้ง (ฟรี)')">พริกเกลือกะปิแห้ง <span>(ฟรี)</span></button>
+            <button class="sauce-option-btn" onclick="selectSauceOption('พริกเกลือลาวแซ่บ (ฟรี)')">พริกเกลือลาวแซ่บ <span>(ฟรี)</span></button>
+            <button class="sauce-option-btn" onclick="selectSauceOption('น้ำจิ้มบ๊วยเค็ม (ฟรี)')">น้ำจิ้มบ๊วยเค็ม <span>(ฟรี)</span></button>
+            <button class="sauce-option-btn" onclick="selectSauceOption('กะปิปลาร้า (+20฿)')">กะปิปลาร้า <span style="color:#d35400;">(+20฿) *ไม่ฟรี</span></button>
+            <button class="sauce-option-btn" onclick="selectSauceOption('กะปิหวาน (+20฿)')">กะปิหวาน <span style="color:#d35400;">(+20฿) *ไม่ฟรี</span></button>
+            
+            <button style="background:#666; width:100%; padding:10px; border-radius:8px; margin-top:10px; font-weight:bold;" onclick="closeSauceModal()">✖ ยกเลิก</button>
+        </div>
+    </div>
+
     <div class="cart-bar">
         <div class="container-inner">
             <div class="cart-info">รวมสั่งซื้อ: <span id="total-qty">0</span> รายการ</div>
@@ -110,13 +137,19 @@
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbziXKeVFE-_qwH1dEdE_AAGDvZmpZEKytWOSPjv-y3QrTVMosy2osVSwjMHs0epHdvt/exec'; 
         
         let menuData = []; 
+        let itemDictionary = {};
         let cart = {};
-        let cartSauces = {}; // เก็บข้อมูลน้ำจิ้มแถมของผลไม้แต่ละกล่อง
+        let cartSauces = {}; 
+        
+        let activeItemId = '';
+        let activeIndex = 0;
+        let isModalOpen = false;
 
         async function loadData() {
             try {
                 const response = await fetch(SCRIPT_URL + '?action=getData');
                 menuData = await response.json();
+                menuData.forEach(item => { itemDictionary[item.id] = item; });
                 renderMenu();
             } catch (error) {
                 document.getElementById('menu-container').innerHTML = '<div style="text-align:center; padding:20px; color:red;">โหลดข้อมูลไม่สำเร็จ กรุณารีเฟรชหน้าเว็บ</div>';
@@ -127,7 +160,7 @@
             const container = document.getElementById('menu-container');
             container.innerHTML = '';
             
-            // 🔥 ปรับให้ดึงหมวดหมู่ราคาผลไม้ปกติ (40 - 100 บาท) ออกมาจากคลาวด์แบบไดนามิก รองรับเศษราคา 65, 75
+            // ดึงกลุ่มราคาผลไม้ปกติ (40 - 100 บาท) แบบไดนามิกส์
             const standardCats = [...new Set(menuData.map(item => Number(item.category)))]
                 .filter(cat => cat >= 40 && cat <= 100)
                 .sort((a, b) => a - b);
@@ -139,19 +172,30 @@
                 }
             });
 
-            // 2. หมวดพรีเมียม (ราคาเกิน 100฿ ขึ้นไป)
             const premiumItems = menuData.filter(item => Number(item.category) > 100);
             if (premiumItems.length > 0) {
                 createCategoryBlock(`✨ ---- ผลไม้พรีเมียม ---- ✨`, premiumItems, false);
             }
 
-            // 3. หมวดน้ำจิ้มด้านล่างสุด (ดึงทุกรายการที่รหัสหมวดหมู่ต่ำกว่า 40 มารวมกัน)
             const dipItems = menuData.filter(item => Number(item.category) < 40);
             if (dipItems.length > 0) {
                 createCategoryBlock(`🥣 ---- สั่งน้ำจิ้ม / พริกเกลือ เพิ่ม (นอกเซ็ต) ---- 🥣`, dipItems, true);
             }
 
             updateCartBar();
+        }
+
+        // ฟังก์ชันตรวจสอบสิทธิ์การแถมน้ำจิ้มในเซ็ต
+        function checkFruitSauceEligibility(itemName) {
+            // ดักเงื่อนไขพิเศษ: ถ้าเป็น "ฝรั่งแช่บ๊วย" จะไม่ได้น้ำจิ้มแถมฟรี
+            if (itemName.includes('ฝรั่งแช่บ๊วย')) {
+                return false;
+            }
+            // ปรับเงื่อนไขให้ มะม่วง, สับปะรด, แอปเปิ้ลทุกชนิด และ ฝรั่งทุกชนิด (ที่เหลือ) มีสิทธิ์เลือกน้ำจิ้มฟรี
+            return itemName.includes('มะม่วง') || 
+                   itemName.includes('สับปะรด') || 
+                   itemName.includes('แอปเปิ้ล') || 
+                   itemName.includes('ฝรั่ง');
         }
 
         function createCategoryBlock(title, items, isDip) {
@@ -170,26 +214,19 @@
                     ? `<div class="product-status status-in">✓ มีพร้อมส่ง</div>`
                     : `<div class="product-status status-out">✗ สินค้าหมดชั่วคราว</div>`;
 
-                let priceText = '';
-                if (isDip) {
-                    if (Number(item.category) === 0 || item.price === 0) {
-                        priceText = `(สั่งเพิ่ม +10฿)`; 
-                    } else {
-                        priceText = `(สั่งเพิ่ม +${item.price}฿)`; 
-                    }
-                } else {
-                    priceText = `(${item.price > 0 ? item.price + '฿' : 'ฟรี'})`;
-                }
+                let priceText = isDip 
+                    ? (Number(item.category) === 0 || item.price === 0 ? `(สั่งเพิ่ม +10฿)` : `(สั่งเพิ่ม +${item.price}฿)`)
+                    : `(${item.price > 0 ? item.price + '฿' : 'ฟรี'})`;
 
                 const priceLabel = `<span style="color: var(--apple-red); font-weight: bold; margin-left: 5px;">${priceText}</span>`;
 
-                // ส่วนเปิดกล่องเลือกน้ำจิ้มฟรีในเซ็ตสำหรับ มะม่วง / สับปะรด / แอปเปิ้ล
+                // เรียกใช้ฟังก์ชันตรวจสอบสิทธิ์เลือกน้ำจิ้มแถม
                 let sauceSelectorHTML = '';
-                const isFruitWithSauce = item.name.includes('มะม่วง') || item.name.includes('สับปะรด') || item.name.includes('แอปเปิ้ล');
+                const isEligible = checkFruitSauceEligibility(item.name);
                 
-                if (isFruitWithSauce && cartQty > 0) {
-                    sauceSelectorHTML = `<div class="sauce-selection-box" style="margin-top: 10px; background: #FFFDF9; padding: 10px; border-radius: 5px; border: 1px dashed #EAE3D5; width: 100%;">`;
-                    sauceSelectorHTML += `<div style="font-size: 13px; font-weight: bold; color: #D34C48; margin-bottom: 5px;">🎁 เลือกน้ำจิ้มแถมฟรีในเซ็ต (กล่องต่อกล่อง):</div>`;
+                if (isEligible && cartQty > 0) {
+                    sauceSelectorHTML = `<div style="margin-top: 10px; background: #FFFDF9; padding: 10px; border-radius: 6px; border: 1px dashed #EAE3D5; width: 100%; font-size: 14px;">`;
+                    sauceSelectorHTML += `<div style="font-weight: bold; color: var(--apple-red); margin-bottom: 5px;">🎁 น้ำจิ้มในเซ็ตที่เลือกไว้:</div>`;
                     
                     for (let i = 0; i < cartQty; i++) {
                         if (!cartSauces[item.id]) cartSauces[item.id] = [];
@@ -197,16 +234,9 @@
                         const currentSauce = cartSauces[item.id][i];
                         
                         sauceSelectorHTML += `
-                            <div style="margin-bottom: 5px; display: flex; align-items: center; gap: 5px; width: 100%;">
-                                <span style="font-size: 13px; color: #666; white-space: nowrap;">กล่องที่ ${i+1}:</span>
-                                <select onchange="changeSauce('${item.id}', ${i}, this)" style="padding: 6px; border-radius: 4px; border: 1px solid #ccc; font-size: 14px; font-family: 'Sarabun'; flex: 1; min-width: 0;">
-                                    <option value="พริกเกลือนัวร์ (ฟรี)" ${currentSauce === 'พริกเกลือนัวร์ (ฟรี)' ? 'selected' : ''}>พริกเกลือนัวร์ (ฟรี)</option>
-                                    <option value="พริกเกลือกะปิแห้ง (ฟรี)" ${currentSauce === 'พริกเกลือกะปิแห้ง (ฟรี)' ? 'selected' : ''}>พริกเกลือกะปิแห้ง (ฟรี)</option>
-                                    <option value="พริกเกลือลาวแซ่บ (ฟรี)" ${currentSauce === 'พริกเกลือลาวแซ่บ (ฟรี)' ? 'selected' : ''}>พริกเกลือลาวแซ่บ (ฟรี)</option>
-                                    <option value="น้ำจิ้มบ๊วยเค็ม (ฟรี)" ${currentSauce === 'น้ำจิ้มบ๊วยเค็ม (ฟรี)' ? 'selected' : ''}>น้ำจิ้มบ๊วยเค็ม (ฟรี)</option>
-                                    <option value="กะปิปลาร้า (+20฿)" ${currentSauce === 'กะปิปลาร้า (+20฿)' ? 'selected' : ''}>กะปิปลาร้า (+20฿) *ไม่ฟรี</option>
-                                    <option value="กะปิหวาน (+20฿)" ${currentSauce === 'กะปิหวาน (+20฿)' ? 'selected' : ''}>กะปิหวาน (+20฿) *ไม่ฟรี</option>
-                                </select>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; padding: 4px 0; border-bottom: 1px dashed #eee;">
+                                <span>กล่องที่ ${i+1}: <b style="color:var(--green-stock);">${currentSauce}</b></span>
+                                <button onclick="openSauceModal('${item.id}', ${i})" style="padding: 2px 10px; font-size: 12px; background: var(--text-dark); color: white; border-radius: 4px;">🔄 เปลี่ยน</button>
                             </div>
                         `;
                     }
@@ -221,10 +251,10 @@
                         </div>
                         <div class="action-area">
                             ${cartQty > 0 ? `
-                                <button onclick="updateQty('${item.id}', -1)" style="background:#888; padding: 8px 12px;">-</button>
+                                <button onclick="handleMinusClick('${item.id}')" style="background:#888; padding: 8px 12px;">-</button>
                                 <span style="font-weight:bold; width: 25px; text-align:center; font-size: 16px;">${cartQty}</span>
                             ` : ''}
-                            <button onclick="updateQty('${item.id}', 1)" ${!item.available ? 'disabled' : ''}>
+                            <button onclick="handleAddClick('${item.id}')" ${!item.available ? 'disabled' : ''}>
                                 ${cartQty > 0 ? '+ เพิ่ม' : 'เลือก'}
                             </button>
                         </div>
@@ -235,38 +265,56 @@
             });
         }
 
-        function updateQty(id, change) {
-            if (!cart[id]) cart[id] = 0;
-            cart[id] += change;
+        function handleAddClick(id) {
+            const item = itemDictionary[id];
+            const isFruitWithSauce = item.name.includes('มะม่วง') || item.name.includes('สับปะรด') || item.name.includes('แอปเปิ้ล');
             
-            if (!cartSauces[id]) cartSauces[id] = [];
-            if (change > 0) {
-                for(let i = 0; i < change; i++) {
-                    cartSauces[id].push("พริกเกลือนัวร์ (ฟรี)");
-                }
-            } else if (change < 0) {
-                for(let i = 0; i < Math.abs(change); i++) {
-                    cartSauces[id].pop();
-                }
+            if (isFruitWithSauce) {
+                const targetIndex = cart[id] || 0;
+                openSauceModal(id, targetIndex);
+            } else {
+                if (!cart[id]) cart[id] = 0;
+                cart[id] += 1;
+                renderMenu();
             }
+        }
 
-            if (cart[id] <= 0) {
-                delete cart[id];
-                delete cartSauces[id];
-            }
+        function handleMinusClick(id) {
+            if (!cart[id]) return;
+            cart[id] -= 1;
+            if (cartSauces[id]) { cartSauces[id].pop(); }
+            if (cart[id] <= 0) { delete cart[id]; delete cartSauces[id]; }
             renderMenu();
         }
 
-        function changeSauce(itemId, index, selectEl) {
-            if (!cartSauces[itemId]) cartSauces[itemId] = [];
-            cartSauces[itemId][index] = selectEl.value;
+        function openSauceModal(id, index) {
+            activeItemId = id; activeIndex = index; isModalOpen = true;
+            const product = itemDictionary[id];
+            document.getElementById('modal-product-name').innerText = product.name;
+            document.getElementById('modal-box-index').innerText = `กล่องที่ ${index + 1}`;
+            document.getElementById('sauce-modal').style.display = 'flex';
+        }
+
+        function closeSauceModal() {
+            document.getElementById('sauce-modal').style.display = 'none';
+            isModalOpen = false;
+        }
+
+        function selectSauceOption(sauceValue) {
+            const id = activeItemId; const index = activeIndex;
+            if (!cart[id] || index >= cart[id]) {
+                if (!cart[id]) cart[id] = 0;
+                cart[id] += 1;
+            }
+            if (!cartSauces[id]) cartSauces[id] = [];
+            cartSauces[id][index] = sauceValue;
+            closeSauceModal();
+            renderMenu();
         }
 
         function updateCartBar() {
             let totalQty = 0;
-            for (const [id, qty] of Object.entries(cart)) {
-                totalQty += qty; 
-            }
+            for (const [id, qty] of Object.entries(cart)) { totalQty += qty; }
             document.getElementById('total-qty').innerText = totalQty;
         }
 
@@ -275,7 +323,6 @@
                 alert("ตะกร้ายังว่างเปล่าอยู่เลยค่ะ อย่าลืมเลือกผลไม้ก่อนนะคะ 🥰"); 
                 return; 
             }
-
             const custName = document.getElementById('cust-name').value.trim();
             const custPhone = document.getElementById('cust-phone').value.trim();
             const custNote = document.getElementById('cust-note').value.trim();
@@ -291,17 +338,14 @@
             orderText += "------------------------\n";
             
             for (const [id, qty] of Object.entries(cart)) {
-                const product = menuData.find(p => p.id === id);
+                const product = itemDictionary[id];
                 if(product) {
                     let nameWithExtra = product.name;
-                    
                     if (Number(product.category) < 40) {
                         const extraPrice = Number(product.category) === 0 ? 10 : product.price;
                         nameWithExtra += ` [สั่งเพิ่มนอกเซ็ต +${extraPrice}฿]`;
                     }
-                    
                     orderText += `- ${nameWithExtra} x ${qty}`;
-                    
                     if (cartSauces[id] && cartSauces[id].length > 0) {
                         const sauceList = cartSauces[id].join(', ');
                         orderText += ` (${sauceList})`;
@@ -309,11 +353,8 @@
                     orderText += ` \n`;
                 }
             }
-            
             orderText += "------------------------\n";
-            if(custNote !== "") {
-                orderText += `📌 หมายเหตุ: ${custNote}\n`;
-            }
+            if(custNote !== "") { orderText += `📌 หมายเหตุ: ${custNote}\n`; }
             
             navigator.clipboard.writeText(orderText).then(() => {
                 alert("✅ คัดลอกรายการสั่งซื้อเรียบร้อยแล้ว!\n\nนำไป 'วาง' ในแชทส่งให้ร้านได้เลยค่ะ");
@@ -323,9 +364,16 @@
         loadData();
         
         setInterval(() => {
+            if (isModalOpen || document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+                return; 
+            }
             fetch(SCRIPT_URL + '?action=getData')
             .then(res => res.json())
-            .then(data => { menuData = data; renderMenu(); })
+            .then(data => { 
+                menuData = data; 
+                menuData.forEach(item => { itemDictionary[item.id] = item; });
+                renderMenu(); 
+            })
         }, 15000); 
     </script>
 </body>
