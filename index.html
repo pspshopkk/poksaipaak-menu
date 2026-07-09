@@ -115,6 +115,7 @@
             <div class="modal-title" id="modal-product-name">ชื่อผลไม้</div>
             <div class="modal-subtitle">🎁 กรุณาเลือกน้ำจิ้มแถมฟรีสำหรับ <span id="modal-box-index" style="font-weight:bold; color:var(--apple-red);">1</span>:</div>
             
+            <button class="sauce-option-btn" style="border-color:#ccc; background:#fff1f1;" onclick="selectSauceOption('ไม่รับน้ำจิ้ม')">❌ ไม่รับน้ำจิ้ม <span>(สะอาด/คลีน)</span></button>
             <button class="sauce-option-btn" onclick="selectSauceOption('พริกเกลือนัวร์ (ฟรี)')">พริกเกลือนัวร์ <span>(ฟรี)</span></button>
             <button class="sauce-option-btn" onclick="selectSauceOption('พริกเกลือกะปิแห้ง (ฟรี)')">พริกเกลือกะปิแห้ง <span>(ฟรี)</span></button>
             <button class="sauce-option-btn" onclick="selectSauceOption('พริกเกลือลาวแซ่บ (ฟรี)')">พริกเกลือลาวแซ่บ <span>(ฟรี)</span></button>
@@ -122,7 +123,7 @@
             <button class="sauce-option-btn" onclick="selectSauceOption('กะปิปลาร้า (+20฿)')">กะปิปลาร้า <span style="color:#d35400;">(+20฿) *ไม่ฟรี</span></button>
             <button class="sauce-option-btn" onclick="selectSauceOption('กะปิหวาน (+20฿)')">กะปิหวาน <span style="color:#d35400;">(+20฿) *ไม่ฟรี</span></button>
             
-            <button style="background:#666; width:100%; padding:10px; border-radius:8px; margin-top:10px; font-weight:bold;" onclick="closeSauceModal()">✖ ยกเลิก</button>
+            <button style="background:#666; width:100%; padding:10px; border-radius:8px; margin-top:10px; font-weight:bold; color:white;" onclick="closeSauceModal()">✖ ยกเลิก</button>
         </div>
     </div>
 
@@ -160,7 +161,6 @@
             const container = document.getElementById('menu-container');
             container.innerHTML = '';
             
-            // ดึงกลุ่มราคาผลไม้ปกติ (40 - 100 บาท) แบบไดนามิกส์
             const standardCats = [...new Set(menuData.map(item => Number(item.category)))]
                 .filter(cat => cat >= 40 && cat <= 100)
                 .sort((a, b) => a - b);
@@ -185,17 +185,9 @@
             updateCartBar();
         }
 
-        // ฟังก์ชันตรวจสอบสิทธิ์การแถมน้ำจิ้มในเซ็ต
         function checkFruitSauceEligibility(itemName) {
-            // ดักเงื่อนไขพิเศษ: ถ้าเป็น "ฝรั่งแช่บ๊วย" จะไม่ได้น้ำจิ้มแถมฟรี
-            if (itemName.includes('ฝรั่งแช่บ๊วย')) {
-                return false;
-            }
-            // ปรับเงื่อนไขให้ มะม่วง, สับปะรด, แอปเปิ้ลทุกชนิด และ ฝรั่งทุกชนิด (ที่เหลือ) มีสิทธิ์เลือกน้ำจิ้มฟรี
-            return itemName.includes('มะม่วง') || 
-                   itemName.includes('สับปะรด') || 
-                   itemName.includes('แอปเปิ้ล') || 
-                   itemName.includes('ฝรั่ง');
+            if (itemName.includes('ฝรั่งแช่บ๊วย')) return false;
+            return itemName.includes('มะม่วง') || itemName.includes('สับปะรด') || itemName.includes('แอปเปิ้ล') || itemName.includes('ฝรั่ง');
         }
 
         function createCategoryBlock(title, items, isDip) {
@@ -220,7 +212,6 @@
 
                 const priceLabel = `<span style="color: var(--apple-red); font-weight: bold; margin-left: 5px;">${priceText}</span>`;
 
-                // เรียกใช้ฟังก์ชันตรวจสอบสิทธิ์เลือกน้ำจิ้มแถม
                 let sauceSelectorHTML = '';
                 const isEligible = checkFruitSauceEligibility(item.name);
                 
@@ -233,9 +224,12 @@
                         if (!cartSauces[item.id][i]) cartSauces[item.id][i] = 'พริกเกลือนัวร์ (ฟรี)'; 
                         const currentSauce = cartSauces[item.id][i];
                         
+                        // แต่งสีให้เด่นถ้าลูกค้าเลือกไม่รับน้ำจิ้ม
+                        const sauceColor = currentSauce === 'ไม่รับน้ำจิ้ม' ? 'color:var(--apple-red);' : 'color:var(--green-stock);';
+
                         sauceSelectorHTML += `
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; padding: 4px 0; border-bottom: 1px dashed #eee;">
-                                <span>กล่องที่ ${i+1}: <b style="color:var(--green-stock);">${currentSauce}</b></span>
+                                <span>กล่องที่ ${i+1}: <b style="${sauceColor}">${currentSauce}</b></span>
                                 <button onclick="openSauceModal('${item.id}', ${i})" style="padding: 2px 10px; font-size: 12px; background: var(--text-dark); color: white; border-radius: 4px;">🔄 เปลี่ยน</button>
                             </div>
                         `;
@@ -267,9 +261,9 @@
 
         function handleAddClick(id) {
             const item = itemDictionary[id];
-            const isFruitWithSauce = item.name.includes('มะม่วง') || item.name.includes('สับปะรด') || item.name.includes('แอปเปิ้ล');
+            const isEligible = checkFruitSauceEligibility(item.name);
             
-            if (isFruitWithSauce) {
+            if (isEligible) {
                 const targetIndex = cart[id] || 0;
                 openSauceModal(id, targetIndex);
             } else {
