@@ -11,7 +11,7 @@
             --apple-red: #D34C48; --apple-red-light: #FDECEA;
             --green-stock: #52894E; --gray-out: #A0A0A0;
             --border-color: #EAE3D5; --line-green: #00B900; --fb-blue: #0084FF;
-            --purple-service: #8e44ad; --purple-light: #f4ecf7;
+            --purple-service: #8e44ad;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Sarabun', sans-serif; }
         body { background-color: var(--bg-cream); color: var(--text-dark); line-height: 1.6; padding-bottom: 120px; }
@@ -24,7 +24,6 @@
         .btn-fb { background-color: var(--fb-blue); }
         .note-box { background-color: var(--apple-red-light); border: 2px dashed var(--apple-red); padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center; color: var(--apple-red); font-weight: bold; }
         
-        /* ฟอร์มข้อมูลลูกค้า */
         .customer-form { background-color: #F8F5EE; padding: 20px; border-radius: 8px; margin: 15px 0 25px 0; border: 1px solid var(--border-color); }
         .customer-form h3 { color: var(--apple-red); margin-bottom: 15px; font-size: 18px; text-align: center; }
         .input-group { margin-bottom: 15px; }
@@ -41,10 +40,7 @@
         .product-item { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 15px 0; border-bottom: 1px solid var(--border-color); }
         .product-info { flex: 1; padding-right: 15px; word-break: keep-all; }
         .product-name { font-size: 16px; font-weight: 600; color: #222; }
-        
-        /* สไตล์คำอธิบาย / ดีเทลสินค้า */
         .product-detail { font-size: 13px; color: #666; margin-top: 3px; line-height: 1.35; font-weight: 400; }
-        
         .product-status { font-size: 13px; margin-top: 4px; }
         .status-in { color: var(--green-stock); }
         .status-out { color: var(--apple-red); font-weight: bold; }
@@ -54,7 +50,6 @@
         button { border: none; background-color: var(--apple-red); color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; transition: 0.2s; font-size: 14px; }
         button:disabled { background-color: var(--gray-out); cursor: not-allowed; }
 
-        /* สไตล์ป๊อปอัพเลือกน้ำจิ้ม (Modal) */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
         .modal-content { background: white; padding: 20px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); animation: fadeIn 0.2s ease-out; }
         .modal-title { font-size: 16px; font-weight: bold; color: var(--apple-red); margin-bottom: 5px; text-align: center; }
@@ -87,7 +82,6 @@
         
         <div class="note-box">‼️ ราคาและปริมาณของผลไม้ อาจปรับขึ้น-ลง ตามกลไกราคาในตลาดนะคะ ‼️</div>
         
-        <!-- ขั้นตอนที่ 1: ข้อมูลลูกค้า -->
         <div class="customer-form">
             <h3>📍 ขั้นตอนที่ 1: กรอกข้อมูลสำหรับจัดส่ง</h3>
             <div class="input-group">
@@ -104,7 +98,6 @@
             </div>
         </div>
 
-        <!-- ขั้นตอนที่ 2: รายการเมนูผลไม้ -->
         <h3 class="step2-title">🍉 ขั้นตอนที่ 2: เลือกผลไม้และบริการเสริม</h3>
         <div id="menu-container">
             <div style="text-align:center; padding:40px;">กำลังโหลดข้อมูลเมนู... ⏳</div>
@@ -118,7 +111,6 @@
         </div>
     </div>
 
-    <!-- กล่องป๊อปอัพเลือกน้ำจิ้ม (Modal) -->
     <div class="modal-overlay" id="sauce-modal">
         <div class="modal-content">
             <div class="modal-title" id="modal-product-name">ชื่อผลไม้</div>
@@ -136,7 +128,6 @@
         </div>
     </div>
 
-    <!-- แถบตะกร้าสินค้าด้านล่างสุด -->
     <div class="cart-bar">
         <div class="container-inner">
             <div class="cart-info">รวมสั่งซื้อ: <span id="total-qty">0</span> รายการ</div>
@@ -156,7 +147,6 @@
         let activeIndex = 0;
         let isModalOpen = false;
 
-        // 🚀 ระบบ Cache: โหลดข้อมูลจากเครื่องลูกค้าก่อนทันทีเพื่อความเร็ว
         function initFromCache() {
             const cached = localStorage.getItem('poksaipaak_menu_cache');
             if (cached) {
@@ -182,7 +172,7 @@
                     renderMenu();
                 }
             } catch (error) {
-                console.warn("ดึงข้อมูลออนไลน์ไม่สำเร็จ ใช้ข้อมูลสำรองในเครื่องแทน:", error);
+                console.warn("ดึงข้อมูลออนไลน์ไม่สำเร็จ ใช้แคชเดิมแทน:", error);
                 if (menuData.length === 0) {
                     document.getElementById('menu-container').innerHTML = '<div style="text-align:center; padding:20px; color:red;">โหลดข้อมูลไม่สำเร็จ กรุณากดรีเฟรชหน้าเว็บอีกครั้งค่ะ 🙏</div>';
                 }
@@ -193,7 +183,6 @@
             const container = document.getElementById('menu-container');
             container.innerHTML = '';
             
-            // 1. หมวดผลไม้ปกติ (40 - 100 บาท)
             const standardCats = [...new Set(menuData.map(item => Number(item.category)))]
                 .filter(cat => !isNaN(cat) && cat >= 40 && cat <= 100)
                 .sort((a, b) => a - b);
@@ -205,19 +194,16 @@
                 }
             });
 
-            // 2. หมวดผลไม้พรีเมียม (ราคาเกิน 100฿)
             const premiumItems = menuData.filter(item => !isNaN(Number(item.category)) && Number(item.category) > 100 && !isServiceItem(item));
             if (premiumItems.length > 0) {
                 createCategoryBlock(`✨ ---- ผลไม้พรีเมียม ---- ✨`, premiumItems, 'fruit');
             }
 
-            // 3. หมวดบริการเสริม / ของขวัญ (category เป็น 'บริการเสริม' หรือ 'service' หรือ 'addon')
             const serviceItems = menuData.filter(item => isServiceItem(item));
             if (serviceItems.length > 0) {
                 createCategoryBlock(`🎀 ---- บริการเสริม / แพ็กเกจของขวัญ ---- 🎀`, serviceItems, 'service');
             }
 
-            // 4. หมวดน้ำจิ้มด้านล่างสุด (หมวดต่ำกว่า 40 และไม่ใช่บริการเสริม)
             const dipItems = menuData.filter(item => !isNaN(Number(item.category)) && Number(item.category) < 40 && !isServiceItem(item));
             if (dipItems.length > 0) {
                 createCategoryBlock(`🥣 ---- สั่งน้ำจิ้ม / พริกเกลือ เพิ่ม (นอกเซ็ต) ---- 🥣`, dipItems, 'dip');
@@ -269,7 +255,6 @@
 
                 const priceLabel = `<span style="color: var(--apple-red); font-weight: bold; margin-left: 5px;">${priceText}</span>`;
 
-                // 📝 ดึงรายละเอียด Detail / Description มาแสดงใต้ชื่อสินค้า
                 const itemDetailText = item.detail || item.description || '';
                 const detailHTML = itemDetailText ? `<div class="product-detail">${itemDetailText}</div>` : '';
 
@@ -419,7 +404,6 @@
             });
         }
 
-        // เริ่มต้นการทำงาน: แสดงผลจากแคชทันที แล้วดึงข้อมูลอัปเดตออนไลน์
         initFromCache();
         loadData();
     </script>
