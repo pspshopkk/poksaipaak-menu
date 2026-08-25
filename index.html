@@ -28,7 +28,8 @@
         .customer-form h3 { color: var(--apple-red); margin-bottom: 15px; font-size: 18px; text-align: center; }
         .input-group { margin-bottom: 15px; }
         .input-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
-        .input-group input, .input-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; font-family: 'Sarabun', sans-serif; }
+        .input-group label .sub-label { font-weight: normal; font-size: 13px; color: #666; display: inline-block; margin-top: 2px; }
+        .input-group input, .input-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 15px; font-family: 'Sarabun', sans-serif; }
         .input-group input:focus, .input-group textarea:focus { outline: none; border-color: var(--apple-red); }
 
         .step2-title { text-align: center; color: var(--apple-red); font-size: 20px; margin-top: 10px; border-top: 2px dashed var(--border-color); padding-top: 20px; }
@@ -82,6 +83,7 @@
         
         <div class="note-box">‼️ ราคาและปริมาณของผลไม้ อาจปรับขึ้น-ลง ตามกลไกราคาในตลาดนะคะ ‼️</div>
         
+        <!-- ขั้นตอนที่ 1: กรอกข้อมูลสำหรับจัดส่ง -->
         <div class="customer-form">
             <h3>📍 ขั้นตอนที่ 1: กรอกข้อมูลสำหรับจัดส่ง</h3>
             <div class="input-group">
@@ -93,11 +95,19 @@
                 <input type="tel" id="cust-phone" placeholder="ระบุเบอร์โทรศัพท์สำหรับติดต่อ">
             </div>
             <div class="input-group">
+                <label>
+                    สถานที่จัดส่ง:
+                    <span class="sub-label"><br>(เพื่อความถูกต้องและรวดเร็วในการจัดส่ง กรุณาใส่พิกัดระบุเจาะจงชัดเจน หรือวางลิงก์ google map ได้เลยค่ะ)</span>
+                </label>
+                <textarea id="cust-address" rows="2" placeholder="ระบุบ้านเลขที่, ซอย, จุดสังเกต หรือวางลิงก์ Google Maps..."></textarea>
+            </div>
+            <div class="input-group">
                 <label>หมายเหตุเพิ่มเติมถึงร้าน (ถ้ามี):</label>
                 <textarea id="cust-note" rows="2" placeholder="เช่น ขอส้อม 2 คัน, จัดเซ็ตเยี่ยมไข้"></textarea>
             </div>
         </div>
 
+        <!-- ขั้นตอนที่ 2: เลือกผลไม้และบริการเสริม -->
         <h3 class="step2-title">🍉 ขั้นตอนที่ 2: เลือกผลไม้และบริการเสริม</h3>
         <div id="menu-container">
             <div style="text-align:center; padding:40px;">กำลังโหลดข้อมูลเมนู... ⏳</div>
@@ -111,6 +121,7 @@
         </div>
     </div>
 
+    <!-- Modal เลือกน้ำจิ้ม -->
     <div class="modal-overlay" id="sauce-modal">
         <div class="modal-content">
             <div class="modal-title" id="modal-product-name">ชื่อผลไม้</div>
@@ -128,6 +139,7 @@
         </div>
     </div>
 
+    <!-- แถบด้านล่างสำหรับกดคัดลอก -->
     <div class="cart-bar">
         <div class="container-inner">
             <div class="cart-info">รวมสั่งซื้อ: <span id="total-qty">0</span> รายการ</div>
@@ -364,6 +376,7 @@
             }
             const custName = document.getElementById('cust-name').value.trim();
             const custPhone = document.getElementById('cust-phone').value.trim();
+            const custAddress = document.getElementById('cust-address').value.trim();
             const custNote = document.getElementById('cust-note').value.trim();
 
             if(custName === "" || custPhone === "") {
@@ -374,6 +387,9 @@
             let orderText = "📝 รายการสั่งซื้อผลไม้:\n";
             orderText += `👤 ชื่อลูกค้า: ${custName}\n`;
             orderText += `📞 เบอร์โทร: ${custPhone}\n`;
+            if(custAddress !== "") {
+                orderText += `📍 สถานที่จัดส่ง: ${custAddress}\n`;
+            }
             orderText += "------------------------\n";
             
             for (const [id, qty] of Object.entries(cart)) {
