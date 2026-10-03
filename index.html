@@ -27,15 +27,15 @@
 
         .container { max-width: 600px; margin: 0 auto; padding: 24px 16px; }
 
-        /* หัวกระดาษ */
+        /* ส่วนหัว */
         .brand-header { text-align: center; padding: 20px 0 10px; }
         .brand-header h1 { font-size: 24px; font-weight: 700; color: var(--text-main); letter-spacing: 0.5px; }
         .brand-header p { font-size: 13px; color: var(--text-sub); margin-top: 4px; }
 
-        /* ข้อความแจ้งเตือน */
+        /* กล่องแจ้งเตือน */
         .market-notice { background: #ffffff; border: 1px solid var(--border); border-left: 3px solid var(--primary); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 12px; color: var(--text-sub); margin: 20px 0 25px; }
 
-        /* หัวข้อหมวดหมู่ */
+        /* หมวดหมู่ */
         .category-title { font-size: 15px; font-weight: 700; color: var(--text-main); margin: 28px 0 12px; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
         .category-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
@@ -50,7 +50,7 @@
         .stock-out { color: #95a5a6; }
         .out-of-stock-text { text-decoration: line-through; opacity: 0.5; }
 
-        /* ปุ่มเพิ่ม-ลดจำนวน */
+        /* ปุ่มจำนวน */
         .qty-controls { display: flex; align-items: center; gap: 6px; }
         .qty-btn { width: 32px; height: 32px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--gray-btn); color: var(--text-main); font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
         .qty-btn:hover { background: var(--gray-btn-hover); }
@@ -59,13 +59,13 @@
         .btn-select-init:hover { background: #1a252f; }
         .btn-select-init:disabled { background: #e9ecef; color: #adb5bd; cursor: not-allowed; }
 
-        /* กล่องแสดงน้ำจิ้ม */
+        /* กล่องน้ำจิ้ม */
         .sauce-summary-box { background: #fdfdfd; border-radius: var(--radius-sm); padding: 8px 12px; margin-top: 10px; font-size: 12px; border: 1px solid var(--border); }
         .sauce-item-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
         .sauce-change-btn { background: none; border: 1px solid var(--border); padding: 2px 8px; border-radius: 4px; font-size: 11px; color: var(--text-sub); cursor: pointer; }
         .sauce-change-btn:hover { border-color: var(--text-main); color: var(--text-main); }
 
-        /* ส่วนกรอกข้อมูลจัดส่ง */
+        /* ข้อมูลจัดส่ง */
         .delivery-section { background: var(--card-bg); border-radius: var(--radius-md); border: 1px solid var(--border); padding: 20px; margin-top: 35px; }
         .delivery-section h3 { font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 16px; }
         .form-row { margin-bottom: 14px; }
@@ -86,7 +86,7 @@
         .btn-confirm-order { background: var(--primary); color: #fff; border: none; border-radius: var(--radius-sm); padding: 10px 24px; font-size: 14px; font-weight: 600; cursor: pointer; }
         .btn-confirm-order:hover { background: var(--primary-dark); }
 
-        /* หน้าต่างเลือกน้ำจิ้ม */
+        /* Modal น้ำจิ้ม */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
         .modal-card { background: #ffffff; border-radius: var(--radius-md); width: 100%; max-width: 360px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .modal-title { font-size: 15px; font-weight: 700; color: var(--text-main); text-align: center; }
@@ -114,7 +114,7 @@
             <div style="text-align:center; padding:40px 0; color:#95a5a6; font-size:13px;">กำลังโหลดรายการสินค้า...</div>
         </div>
 
-        <!-- รายละเอียดการจัดส่ง -->
+        <!-- ข้อมูลจัดส่ง -->
         <div class="delivery-section">
             <h3>ข้อมูลการจัดส่ง</h3>
             <div class="form-row">
@@ -386,6 +386,17 @@
                 }
             }
 
+            // ข้อมูลจัดส่งในใบเสร็จ
+            const customerDetails = [
+                { type: "text", text: `ลูกค้า: คุณ ${name}`, size: "sm", weight: "bold", color: "#2c3e50" },
+                { type: "text", text: `เบอร์โทรศัพท์: ${phone}`, size: "sm", color: "#555555" },
+                { type: "text", text: `สถานที่จัดส่ง: ${address}`, size: "sm", color: "#555555", wrap: true }
+            ];
+            if (note) {
+                customerDetails.push({ type: "text", text: `หมายเหตุ: ${note}`, size: "sm", color: "#7f8c8d", wrap: true });
+            }
+
+            // โครงสร้าง Flex Message ที่ถูกต้องตามมาตรฐาน LINE (ใช้รหัสสี 6 หลักทั้งหมด)
             const flexMessage = {
                 type: "flex",
                 altText: `คำสั่งซื้อสินค้า: คุณ ${name} (${subtotal} บาท)`,
@@ -394,22 +405,14 @@
                     header: {
                         type: "box", layout: "vertical", backgroundColor: "#2c3e50", paddingAll: "16px",
                         contents: [
-                            { type: "text", text: "ปอกใส่ปาก", weight: "bold", color: "#FFFFFF", size: "lg", align: "center" },
-                            { type: "text", text: "รายการสั่งซื้อสินค้าออนไลน์", color: "#BDC3C7", size: "xs", align: "center", margin: "xs" }
+                            { type: "text", text: "ปอกใส่ปาก", weight: "bold", color: "#ffffff", size: "lg", align: "center" },
+                            { type: "text", text: "รายการสั่งซื้อสินค้าออนไลน์", color: "#bdc3c7", size: "xs", align: "center", margin: "xs" }
                         ]
                     },
                     body: {
                         type: "box", layout: "vertical", spacing: "md",
                         contents: [
-                            {
-                                type: "box", layout: "vertical", spacing: "xs",
-                                contents: [
-                                    { type: "text", text: `ลูกค้า: คุณ ${name}`, size: "sm", weight: "bold", color: "#2c3e50" },
-                                    { type: "text", text: `เบอร์โทรศัพท์: ${phone}`, size: "sm", color: "#555" },
-                                    { type: "text", text: `สถานที่จัดส่ง: ${address}`, size: "sm", color: "#555", wrap: true },
-                                    note ? { type: "text", text: `หมายเหตุ: ${note}`, size: "sm", color: "#7f8c8d", wrap: true } : { type: "filler" }
-                                ]
-                            },
+                            { type: "box", layout: "vertical", spacing: "xs", contents: customerDetails },
                             { type: "separator" },
                             { type: "box", layout: "vertical", spacing: "sm", contents: itemContents },
                             { type: "separator" },
@@ -426,17 +429,29 @@
                 }
             };
 
-            if (typeof liff !== 'undefined' && liff.isLoggedIn() && liff.isInClient()) {
-                try {
-                    await liff.sendMessages([flexMessage]);
-                    alert('ส่งรายการสั่งซื้อเรียบร้อยแล้ว');
-                    liff.closeWindow();
+            // ตรวจสอบและส่งข้อความผ่าน LINE LIFF
+            if (typeof liff !== 'undefined') {
+                if (!liff.isInClient()) {
+                    alert('กรุณาเปิดลิงก์สั่งซื้อผ่านแอปพลิเคชัน LINE เพื่อให้ระบบส่งรายการสั่งซื้อเข้าแชทโดยอัตโนมัติ');
+                } else if (!liff.isLoggedIn()) {
+                    liff.login();
                     return;
-                } catch (e) {
-                    console.error("LIFF send error:", e);
+                } else {
+                    try {
+                        await liff.sendMessages([flexMessage]);
+                        alert('ส่งรายการสั่งซื้อเรียบร้อยแล้ว');
+                        liff.closeWindow();
+                        return;
+                    } catch (e) {
+                        alert('ไม่สามารถส่งข้อความเข้าแชทได้: ' + e.message + '\nกรุณาตรวจสอบว่าได้เปิดสิทธิ์ chat_message.write ใน LINE Developers แล้วหรือไม่');
+                        btn.innerText = 'ยืนยันการสั่งซื้อ';
+                        btn.disabled = false;
+                        return;
+                    }
                 }
             }
 
+            // คำสั่งสำรองกรณีเปิดนอก LINE เท่านั้น
             let textOrder = `รายการสั่งซื้อสินค้า\nลูกค้า: คุณ ${name}\nเบอร์โทรศัพท์: ${phone}\nสถานที่จัดส่ง: ${address}\n`;
             if (note) textOrder += `หมายเหตุ: ${note}\n`;
             textOrder += `------------------------\n`;
