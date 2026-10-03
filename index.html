@@ -119,15 +119,15 @@
             <h3>ข้อมูลการจัดส่ง</h3>
             <div class="form-row">
                 <label>ชื่อลูกค้า <span class="req">*</span></label>
-                <input type="text" id="cust-name" placeholder="ระบุชื่อจริง หรือชื่อเรียก">
+                <input type="text" id="cust-name" name="name" autocomplete="name" placeholder="ระบุชื่อจริง หรือชื่อเรียก">
             </div>
             <div class="form-row">
                 <label>เบอร์โทรศัพท์ติดต่อ <span class="req">*</span></label>
-                <input type="tel" id="cust-phone" placeholder="เช่น 0812345678">
+                <input type="tel" id="cust-phone" name="tel" autocomplete="tel" placeholder="เช่น 0812345678">
             </div>
             <div class="form-row">
                 <label>สถานที่จัดส่ง <span class="req">*</span></label>
-                <textarea id="cust-address" rows="2" placeholder="ระบุบ้านเลขที่, ถนน/ซอย, จุดสังเกต หรือพิกัดแผนที่"></textarea>
+                <textarea id="cust-address" name="address" autocomplete="street-address" rows="2" placeholder="ระบุบ้านเลขที่, ถนน/ซอย, จุดสังเกต หรือพิกัดแผนที่"></textarea>
             </div>
             <div class="form-row">
                 <label>หมายเหตุเพิ่มเติม (ถ้ามี)</label>
@@ -177,9 +177,32 @@
         let menuData = [], itemDictionary = {}, cart = {}, cartSauces = {};
         let activeItemId = '', activeIndex = 0;
 
+        // ดึงข้อมูลเดิมที่เคยบันทึกไว้ในเครื่องของลูกค้ามาเติมให้อัตโนมัติ
+        function loadCustomerMemory() {
+            try {
+                const savedName = localStorage.getItem('poksai_customer_name');
+                const savedPhone = localStorage.getItem('poksai_customer_phone');
+                const savedAddress = localStorage.getItem('poksai_customer_address');
+
+                if (savedName) document.getElementById('cust-name').value = savedName;
+                if (savedPhone) document.getElementById('cust-phone').value = savedPhone;
+                if (savedAddress) document.getElementById('cust-address').value = savedAddress;
+            } catch (e) {
+                console.warn("Storage access error:", e);
+            }
+        }
+
         async function initLiff() {
+            loadCustomerMemory(); // เรียกข้อมูลเดิมขึ้นมาทันทีที่เปิดหน้าเว็บ
             try { 
                 await liff.init({ liffId: MY_LIFF_ID }); 
+                // หากลูกค้ายังไม่เคยมีชื่อที่บันทึกไว้ ให้ดึงชื่อโปรไฟล์ LINE มาใส่ให้อัตโนมัติ
+                if (liff.isLoggedIn() && !document.getElementById('cust-name').value) {
+                    const profile = await liff.getProfile();
+                    if (profile && profile.displayName) {
+                        document.getElementById('cust-name').value = profile.displayName;
+                    }
+                }
             } catch (e) { 
                 console.warn("LIFF initialization error:", e); 
             }
@@ -349,6 +372,15 @@
             if (!phone) { alert('กรุณากรอกเบอร์โทรศัพท์'); document.getElementById('cust-phone').focus(); return; }
             if (!address) { alert('กรุณากรอกสถานที่จัดส่ง'); document.getElementById('cust-address').focus(); return; }
 
+            // บันทึกข้อมูลลงความจำของเครื่องลูกค้าทันที เพื่อใช้ในครั้งต่อไป
+            try {
+                localStorage.setItem('poksai_customer_name', name);
+                localStorage.setItem('poksai_customer_phone', phone);
+                localStorage.setItem('poksai_customer_address', address);
+            } catch (e) {
+                console.warn("Storage save error:", e);
+            }
+
             const btn = document.getElementById('btn-submit');
             btn.innerText = 'กำลังส่งรายการสั่งซื้อ...';
             btn.disabled = true;
@@ -386,7 +418,6 @@
                 }
             }
 
-            // ข้อมูลจัดส่งในใบเสร็จ
             const customerDetails = [
                 { type: "text", text: `ลูกค้า: คุณ ${name}`, size: "sm", weight: "bold", color: "#2c3e50" },
                 { type: "text", text: `เบอร์โทรศัพท์: ${phone}`, size: "sm", color: "#555555" },
@@ -396,7 +427,6 @@
                 customerDetails.push({ type: "text", text: `หมายเหตุ: ${note}`, size: "sm", color: "#7f8c8d", wrap: true });
             }
 
-            // โครงสร้าง Flex Message ที่ถูกต้องตามมาตรฐาน LINE (ใช้รหัสสี 6 หลักทั้งหมด)
             const flexMessage = {
                 type: "flex",
                 altText: `คำสั่งซื้อสินค้า: คุณ ${name} (${subtotal} บาท)`,
@@ -429,7 +459,6 @@
                 }
             };
 
-            // ตรวจสอบและส่งข้อความผ่าน LINE LIFF
             if (typeof liff !== 'undefined') {
                 if (!liff.isInClient()) {
                     alert('กรุณาเปิดลิงก์สั่งซื้อผ่านแอปพลิเคชัน LINE เพื่อให้ระบบส่งรายการสั่งซื้อเข้าแชทโดยอัตโนมัติ');
@@ -451,7 +480,6 @@
                 }
             }
 
-            // คำสั่งสำรองกรณีเปิดนอก LINE เท่านั้น
             let textOrder = `รายการสั่งซื้อสินค้า\nลูกค้า: คุณ ${name}\nเบอร์โทรศัพท์: ${phone}\nสถานที่จัดส่ง: ${address}\n`;
             if (note) textOrder += `หมายเหตุ: ${note}\n`;
             textOrder += `------------------------\n`;
