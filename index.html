@@ -105,15 +105,15 @@
             <h3>ข้อมูลการจัดส่ง</h3>
             <div class="form-row">
                 <label>ชื่อลูกค้า <span class="req">*</span></label>
-                <input type="text" id="cust-name" placeholder="ระบุชื่อจริง หรือชื่อเรียก">
+                <input type="text" id="cust-name" name="name" autocomplete="name" placeholder="ระบุชื่อจริง หรือชื่อเรียก">
             </div>
             <div class="form-row">
                 <label>เบอร์โทรศัพท์ติดต่อ <span class="req">*</span></label>
-                <input type="tel" id="cust-phone" placeholder="เช่น 0812345678">
+                <input type="tel" id="cust-phone" name="tel" autocomplete="tel" placeholder="เช่น 0812345678">
             </div>
             <div class="form-row">
                 <label>สถานที่จัดส่ง <span class="req">*</span></label>
-                <textarea id="cust-address" rows="2" placeholder="ระบุบ้านเลขที่, ถนน/ซอย, จุดสังเกต หรือพิกัดแผนที่"></textarea>
+                <textarea id="cust-address" name="address" autocomplete="street-address" rows="2" placeholder="ระบุบ้านเลขที่, ถนน/ซอย, จุดสังเกต หรือพิกัดแผนที่"></textarea>
             </div>
             <div class="form-row">
                 <label>หมายเหตุเพิ่มเติม (ถ้ามี)</label>
@@ -164,7 +164,9 @@
 
         function loadCustomerMemory() {
             try {
-                const n = localStorage.getItem('poksai_name'), p = localStorage.getItem('poksai_phone'), a = localStorage.getItem('poksai_address');
+                const n = localStorage.getItem('poksai_customer_name');
+                const p = localStorage.getItem('poksai_customer_phone');
+                const a = localStorage.getItem('poksai_customer_address');
                 if (n) document.getElementById('cust-name').value = n;
                 if (p) document.getElementById('cust-phone').value = p;
                 if (a) document.getElementById('cust-address').value = a;
@@ -240,9 +242,10 @@
                     for (let i = 0; i < cartQty; i++) {
                         if (!cartSauces[item.id]) cartSauces[item.id] = [];
                         if (!cartSauces[item.id][i]) cartSauces[item.id][i] = 'พริกเกลือนัวร์ (ฟรี)';
+                        const cur = cartSauces[item.id][i];
                         sauceHTML += `
                             <div class="sauce-item-row">
-                                <span>กล่องที่ ${i+1}: <b>${cartSauces[item.id][i]}</b></span>
+                                <span>กล่องที่ ${i+1}: <b>${cur}</b></span>
                                 <button class="sauce-change-btn" onclick="openSauceModal('${item.id}', ${i})">เปลี่ยน</button>
                             </div>`;
                     }
@@ -333,9 +336,9 @@
             if (!address) { alert('กรุณากรอกสถานที่จัดส่ง'); document.getElementById('cust-address').focus(); return; }
 
             try {
-                localStorage.setItem('poksai_name', name);
-                localStorage.setItem('poksai_phone', phone);
-                localStorage.setItem('poksai_address', address);
+                localStorage.setItem('poksai_customer_name', name);
+                localStorage.setItem('poksai_customer_phone', phone);
+                localStorage.setItem('poksai_customer_address', address);
             } catch (e) {}
 
             const btn = document.getElementById('btn-submit');
@@ -376,7 +379,7 @@
                 cloudItems.push({ id: product.id, name: product.name, price: price, qty: qty, sauces: saucesForThisItem });
             }
 
-            // บันทึกขึ้น Cloud Sheet (แท็บ Orders) ทันที
+            // ส่งข้อมูลขึ้น Google Sheets และรอให้คำขอถูกส่งออกไปจริงก่อน
             try {
                 const cloudUrl = `${ORDER_API_URL}?action=createOrder`
                     + `&name=${encodeURIComponent(name)}`
@@ -385,7 +388,7 @@
                     + `&note=${encodeURIComponent(note)}`
                     + `&items=${encodeURIComponent(JSON.stringify(cloudItems))}`
                     + `&total=${encodeURIComponent(subtotal)}`;
-                fetch(cloudUrl, { mode: 'no-cors' });
+                await fetch(cloudUrl, { mode: 'no-cors' });
             } catch (err) {
                 console.warn("Cloud save error:", err);
             }
