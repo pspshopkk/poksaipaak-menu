@@ -172,7 +172,10 @@
     </div>
 
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbw_E7mdky1b9Jle_1YK6-a4SOgbm7nAHYJOtTgS3aNrizeFiOxwywT92BqI8NA7RrEeOA/exec';
+        // ลิงก์ชีทเมนูผลไม้โดยเฉพาะ
+        const MENU_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyaPiqWEQhgM7nxSTDj67DU_8TsWVu36aJNLagaQ33OBRKGErUyiA2x3M9YiMF7kuvL/exec'; 
+        // ลิงก์ชีทบันทึกออเดอร์คลาวด์และจัดการลูกค้า
+        const ORDER_API_URL = 'https://script.google.com/macros/s/AKfycbw_E7mdky1b9Jle_1YK6-a4SOgbm7nAHYJOtTgS3aNrizeFiOxwywT92BqI8NA7RrEeOA/exec';
         const MY_LIFF_ID = '2011847809-BCDUYMKz';
 
         let menuData = [], itemDictionary = {}, cart = {}, cartSauces = {};
@@ -202,12 +205,22 @@
 
         async function loadData() {
             try {
-                const res = await fetch(API_URL + '?action=getData');
-                menuData = await res.json();
-                if (!Array.isArray(menuData) || menuData.length === 0) throw new Error("Empty data");
+                // เรียกจากชีทเมนูผลไม้หลัก
+                let res = await fetch(MENU_SCRIPT_URL + '?action=getData');
+                let data = await res.json();
+                
+                // ถ้ารายการว่าง ให้สลับไปลองดึงจากชีทกลางสำรอง
+                if (!Array.isArray(data) || data.length === 0) {
+                    res = await fetch(ORDER_API_URL + '?action=getData');
+                    data = await res.json();
+                }
+
+                if (!Array.isArray(data) || data.length === 0) throw new Error("Empty menu");
+                menuData = data;
                 menuData.forEach(item => { itemDictionary[item.id] = item; });
                 renderMenu();
             } catch (e) {
+                console.error("Load menu error:", e);
                 document.getElementById('menu-container').innerHTML = '<div style="text-align:center; padding:30px; color:#e74c3c; font-size:13px;">ไม่สามารถโหลดรายการสินค้าได้ กรุณารีเฟรชหน้าจอ</div>';
             }
         }
@@ -352,7 +365,6 @@
             if (!phone) { alert('กรุณากรอกเบอร์โทรศัพท์'); document.getElementById('cust-phone').focus(); return; }
             if (!address) { alert('กรุณากรอกสถานที่จัดส่ง'); document.getElementById('cust-address').focus(); return; }
 
-            // แสดงหน้าต่าง Loading เต็มหน้าจอ
             const loadingOverlay = document.getElementById('loading-overlay');
             loadingOverlay.style.display = 'flex';
 
@@ -396,9 +408,8 @@
                 cloudItems.push({ id: product.id, name: product.name, price: price, qty: qty, sauces: saucesForThisItem });
             }
 
-            // บันทึกขึ้น Google Sheets (รอให้คำขอส่งสำเร็จ)
             try {
-                const cloudUrl = `${API_URL}?action=createOrder`
+                const cloudUrl = `${ORDER_API_URL}?action=createOrder`
                     + `&name=${encodeURIComponent(name)}`
                     + `&phone=${encodeURIComponent(phone)}`
                     + `&address=${encodeURIComponent(address)}`
@@ -449,7 +460,6 @@
                 }
             };
 
-            // ส่งผ่าน LINE LIFF
             if (typeof liff !== 'undefined' && liff.isInClient() && liff.isLoggedIn()) {
                 try {
                     await liff.sendMessages([flexMessage]);
@@ -462,7 +472,6 @@
                 }
             }
 
-            // กรณีเปิดผ่านเบราว์เซอร์ปกติ / Facebook
             loadingOverlay.style.display = 'none';
             alert('ระบบบันทึกรายการสั่งซื้อเรียบร้อยแล้ว แอดมินจะติดต่อยืนยันออเดอร์ในแชทสักครู่นะคะ');
         }
