@@ -432,7 +432,7 @@
             listContainer.innerHTML = '';
 
             // กรองเอาเฉพาะผลไม้พร้อมจำหน่าย
-            const eligibleFruits = menuData.filter(i => !isService(i) && !isNaN(Number(i.category)) && Number(i.category) >= 40 && i.available);
+            const eligibleFruits = menuData.filter(i => !isService(i) && !isNaN(Number(i.category)) && Number(i.category) >= 40 && i.available && !i.name.includes('ยำ'));
             
             eligibleFruits.forEach(item => {
                 const row = document.createElement('div');
