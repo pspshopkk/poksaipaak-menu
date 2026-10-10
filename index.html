@@ -225,6 +225,19 @@
                 <!-- รายการผลไม้จะถูกโหลดมาแสดงที่นี่ -->
             </div>
 
+            <!-- กล่องเลือกน้ำจิ้ม/พริกเกลือสำหรับกล่องดูโอ้ -->
+            <div id="duo-sauce-section" style="display:none; background:#fdfdfd; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:12px; font-size:12px;">
+                <div style="font-weight:600; color:var(--text-main); margin-bottom:6px;">เลือกน้ำจิ้ม / พริกเกลือ (ฟรี 1 อย่าง):</div>
+                <select id="duo-sauce-select" onchange="updateDuoCalcPrice()" style="width:100%; padding:8px; border:1px solid var(--border); border-radius:var(--radius-sm); font-size:13px; background:#fff; color:var(--text-main);">
+                    <option value="พริกเกลือนัวร์ (ฟรี)">พริกเกลือนัวร์ (ฟรี)</option>
+                    <option value="พริกเกลือกะปิแห้ง (ฟรี)">พริกเกลือกะปิแห้ง (ฟรี)</option>
+                    <option value="พริกเกลือลาวแซ่บ (ฟรี)">พริกเกลือลาวแซ่บ (ฟรี)</option>
+                    <option value="น้ำจิ้มบ๊วยเค็ม (ฟรี)">น้ำจิ้มบ๊วยเค็ม (ฟรี)</option>
+                    <option value="กะปิปลาร้า (+20 บาท)">กะปิปลาร้า (+20 บาท)</option>
+                    <option value="กะปิหวาน (+20 บาท)">กะปิหวาน (+20 บาท)</option>
+                    <option value="ไม่รับน้ำจิ้ม">ไม่รับน้ำจิ้ม</option>
+                </select>
+            </div>
             <div id="duo-addon-section" style="display:none; background:#fdfdfd; border:1px solid var(--border); border-radius:var(--radius-sm); padding:8px 12px; margin-bottom:12px; font-size:12px;">
                 <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
                     <input type="checkbox" id="duo-addon-check" onchange="updateDuoCalcPrice()">
