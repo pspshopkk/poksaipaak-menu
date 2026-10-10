@@ -58,7 +58,7 @@
         .sauce-change-btn { background: none; border: 1px solid var(--border); padding: 2px 8px; border-radius: 4px; font-size: 11px; color: var(--text-sub); cursor: pointer; }
         .sauce-change-btn:hover { border-color: var(--text-main); color: var(--text-main); }
 
-        /* การ์ดผลไม้ดูโอ้ */
+        /* การ์ดเมนูดูโอ้ */
         .duo-banner-card {
             background: #ffffff;
             border: 1px solid var(--text-main);
@@ -85,8 +85,9 @@
             white-space: nowrap;
         }
         .btn-duo-open:hover { background: #1a252f; }
+        .btn-duo-open:disabled { background: #ccc; cursor: not-allowed; }
 
-        /* รายการกล่องดูโอ้ที่เลือกไว้ในตะกร้า */
+        /* รายการกล่องดูโอ้ในตะกร้า */
         .duo-cart-item {
             background: #ffffff;
             border: 1px solid var(--border);
@@ -111,19 +112,22 @@
         }
         .btn-duo-delete:hover { border-color: var(--primary); color: var(--primary); }
 
-        /* ตัวเลือกใน Modal ดูโอ้ */
+        /* รายการเลือกผลไม้ดูโอ้ใน Modal (ไม่แสดงราคาเดี่ยว) */
         .duo-fruit-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 12px;
+            padding: 12px 14px;
             border-bottom: 1px solid var(--border);
             cursor: pointer;
-            font-size: 13px;
+            font-size: 13.5px;
+            font-weight: 500;
+            color: var(--text-main);
+            transition: background 0.15s;
         }
         .duo-fruit-row:last-child { border-bottom: none; }
         .duo-fruit-row:hover { background: var(--gray-btn); }
-        .duo-fruit-row input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+        .duo-fruit-row input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
 
         .delivery-section { background: var(--card-bg); border-radius: var(--radius-md); border: 1px solid var(--border); padding: 20px; margin-top: 35px; }
         .delivery-section h3 { font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 16px; }
@@ -145,7 +149,7 @@
         .btn-confirm-order:disabled { background: #e9ecef; color: #adb5bd; cursor: not-allowed; }
 
         /* Modal น้ำจิ้ม และ ดูโอ้ */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
         .modal-card { background: #ffffff; border-radius: var(--radius-md); width: 100%; max-width: 380px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .modal-title { font-size: 15px; font-weight: 700; color: var(--text-main); text-align: center; }
         .modal-sub { font-size: 12px; color: var(--text-sub); text-align: center; margin: 4px 0 16px; }
@@ -173,7 +177,7 @@
             ราคาและปริมาณผลไม้อาจมีการปรับเปลี่ยนตามกลไกราคาตลาดในแต่ละวัน
         </div>
 
-        <!-- กล่องเมนูผลไม้ดูโอ้ (จับคู่ 2 อย่าง) -->
+        <!-- กล่องเมนูดูโอ้ -->
         <div class="category-title">เมนูพิเศษแนะนำ</div>
         <div class="duo-banner-card">
             <div>
@@ -181,7 +185,7 @@
                 <div class="duo-banner-desc">จับคู่ผลไม้ 2 ชนิดในกล่องเดียวตามใจคุณ</div>
                 <div class="duo-banner-price">เริ่มต้น 70 บาท</div>
             </div>
-            <button class="btn-duo-open" onclick="openDuoModal()">+ เลือกจับคู่</button>
+            <button class="btn-duo-open" id="btn-open-duo" onclick="openDuoModal()">+ เลือกจับคู่</button>
         </div>
         <div id="duo-cart-container"></div>
 
@@ -215,20 +219,20 @@
         </div>
     </div>
 
-    <!-- หน้าต่างเลือกผลไม้ดูโอ้ -->
+    <!-- Modal เลือกผลไม้ดูโอ้ (โหลดเร็วขึ้นและไม่แสดงราคาแยก) -->
     <div class="modal-overlay" id="duo-modal">
         <div class="modal-card" style="display:flex; flex-direction:column; max-height:85vh;">
             <div class="modal-title">เลือกผลไม้ดูโอ้ (2 อย่าง)</div>
             <div class="modal-sub">เลือกผลไม้ที่ต้องการ <span id="duo-count-label" style="font-weight:600; color:var(--primary);">(เลือกแล้ว 0/2 อย่าง)</span></div>
             
             <div id="duo-fruit-list" style="overflow-y:auto; flex:1; max-height:260px; border:1px solid var(--border); border-radius:var(--radius-sm); margin-bottom:12px;">
-                <!-- รายการผลไม้จะถูกโหลดมาแสดงที่นี่ -->
+                <div style="text-align:center; padding:20px; font-size:12px; color:var(--text-sub);">กำลังโหลดรายการผลไม้...</div>
             </div>
 
-            <!-- กล่องเลือกน้ำจิ้ม/พริกเกลือสำหรับกล่องดูโอ้ -->
-            <div id="duo-sauce-section" style="display:none; background:#fdfdfd; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:12px; font-size:12px;">
+            <!-- กล่องเลือกน้ำจิ้มสำหรับผลไม้ดูโอ้ -->
+            <div id="duo-sauce-section" style="display:none; background:#fdfdfd; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:10px; font-size:12px;">
                 <div style="font-weight:600; color:var(--text-main); margin-bottom:6px;">เลือกน้ำจิ้ม / พริกเกลือ (ฟรี 1 อย่าง):</div>
-                <select id="duo-sauce-select" onchange="updateDuoCalcPrice()" style="width:100%; padding:8px; border:1px solid var(--border); border-radius:var(--radius-sm); font-size:13px; background:#fff; color:var(--text-main);">
+                <select id="duo-sauce-select" onchange="updateDuoCalcPrice()" style="width:100%; padding:7px; border:1px solid var(--border); border-radius:var(--radius-sm); font-size:13px; background:#fff; color:var(--text-main);">
                     <option value="พริกเกลือนัวร์ (ฟรี)">พริกเกลือนัวร์ (ฟรี)</option>
                     <option value="พริกเกลือกะปิแห้ง (ฟรี)">พริกเกลือกะปิแห้ง (ฟรี)</option>
                     <option value="พริกเกลือลาวแซ่บ (ฟรี)">พริกเกลือลาวแซ่บ (ฟรี)</option>
@@ -238,6 +242,8 @@
                     <option value="ไม่รับน้ำจิ้ม">ไม่รับน้ำจิ้ม</option>
                 </select>
             </div>
+
+            <!-- กล่องเพิ่มท็อปปิ้งสำหรับอะโวคาโด้ -->
             <div id="duo-addon-section" style="display:none; background:#fdfdfd; border:1px solid var(--border); border-radius:var(--radius-sm); padding:8px 12px; margin-bottom:12px; font-size:12px;">
                 <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
                     <input type="checkbox" id="duo-addon-check" onchange="updateDuoCalcPrice()">
@@ -257,7 +263,7 @@
         </div>
     </div>
 
-    <!-- หน้าต่างเลือกน้ำจิ้ม -->
+    <!-- Modal เลือกน้ำจิ้มสำหรับผลไม้เดี่ยว -->
     <div class="modal-overlay" id="sauce-modal">
         <div class="modal-card">
             <div class="modal-title" id="modal-product-name">รายการสินค้า</div>
@@ -286,7 +292,7 @@
         </div>
     </div>
 
-    <!-- หน้าต่างแจ้งเตือนระหว่างส่งข้อมูล -->
+    <!-- หน้าต่างแสดงสถานะกำลังส่งข้อมูล -->
     <div class="loading-overlay" id="loading-overlay">
         <div class="spinner"></div>
         <div class="loading-title">ระบบกำลังส่งคำสั่งซื้อ</div>
@@ -294,9 +300,7 @@
     </div>
 
     <script>
-        // ลิงก์ชีทเมนูผลไม้โดยเฉพาะ
         const MENU_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyaPiqWEQhgM7nxSTDj67DU_8TsWVu36aJNLagaQ33OBRKGErUyiA2x3M9YiMF7kuvL/exec'; 
-        // ลิงก์ชีทบันทึกออเดอร์คลาวด์และจัดการลูกค้า
         const ORDER_API_URL = 'https://script.google.com/macros/s/AKfycbw_E7mdky1b9Jle_1YK6-a4SOgbm7nAHYJOtTgS3aNrizeFiOxwywT92BqI8NA7RrEeOA/exec';
         const MY_LIFF_ID = '2011847809-BCDUYMKz';
 
@@ -342,7 +346,9 @@
                 if (!Array.isArray(data) || data.length === 0) throw new Error("Empty menu");
                 menuData = data;
                 menuData.forEach(item => { itemDictionary[item.id] = item; });
+                
                 renderMenu();
+                preRenderDuoFruitList(); // สร้างลิสต์ดูโอ้รอไว้ล่วงหน้าทันทีเพื่อลดอาการดีเลย์
             } catch (e) {
                 console.error("Load menu error:", e);
                 document.getElementById('menu-container').innerHTML = '<div style="text-align:center; padding:30px; color:#e74c3c; font-size:13px;">ไม่สามารถโหลดรายการสินค้าได้ กรุณารีเฟรชหน้าจอ</div>';
@@ -434,28 +440,55 @@
             });
         }
 
-        /* ------------------ ฟังก์ชันสำหรับผลไม้ดูโอ้ ------------------ */
+        /* ------------------ ระบบผลไม้ดูโอ้ (โหลดทันที + ซ่อนราคาเดี่ยว) ------------------ */
 
-        function openDuoModal() {
-            selectedDuoItems = [];
-            document.getElementById('duo-addon-check').checked = false;
-            document.getElementById('duo-addon-section').style.display = 'none';
-
+        // สร้างรายการผลไม้ใส่ DOM ไว้ล่วงหน้าทันที (ไม่แสดงราคาของผลไม้)
+        function preRenderDuoFruitList() {
             const listContainer = document.getElementById('duo-fruit-list');
             listContainer.innerHTML = '';
 
-            // กรองเอาเฉพาะผลไม้พร้อมจำหน่าย
-            const eligibleFruits = menuData.filter(i => !isService(i) && !isNaN(Number(i.category)) && Number(i.category) >= 40 && i.available && !i.name.includes('ยำ'));
+            const eligibleFruits = menuData.filter(i => 
+                !isService(i) && 
+                !isNaN(Number(i.category)) && 
+                Number(i.category) >= 40 && 
+                i.available && 
+                !i.name.includes('ยำ')
+            );
             
             eligibleFruits.forEach(item => {
                 const row = document.createElement('div');
                 row.className = 'duo-fruit-row';
+                // แสดงเฉพาะชื่อผลไม้เท่านั้นตามที่ต้องการ
                 row.innerHTML = `
-                    <span>${item.name} <b style="color:var(--text-sub); font-size:12px;">(${item.price} บาท)</b></span>
+                    <span>${item.name}</span>
                     <input type="checkbox" id="cb-duo-${item.id}" onchange="handleDuoFruitCheck(this, '${item.id}')">
                 `;
+                row.onclick = (e) => {
+                    if (e.target.tagName !== 'INPUT') {
+                        const cb = document.getElementById(`cb-duo-${item.id}`);
+                        cb.checked = !cb.checked;
+                        handleDuoFruitCheck(cb, item.id);
+                    }
+                };
                 listContainer.appendChild(row);
             });
+        }
+
+        // เปิด Modal ได้ทันทีโดยไม่ต้องรอ Render ใหม่
+        function openDuoModal() {
+            selectedDuoItems = [];
+            
+            // ล้างการติ๊กทั้งหมด
+            document.querySelectorAll('#duo-fruit-list input[type="checkbox"]').forEach(cb => cb.checked = false);
+            
+            document.getElementById('duo-addon-check').checked = false;
+            document.getElementById('duo-addon-section').style.display = 'none';
+
+            const sauceSec = document.getElementById('duo-sauce-section');
+            if (sauceSec) {
+                sauceSec.style.display = 'none';
+                document.getElementById('duo-sauce-select').value = 'พริกเกลือนัวร์ (ฟรี)';
+            }
 
             updateDuoCalcPrice();
             document.getElementById('duo-modal').style.display = 'flex';
@@ -478,15 +511,28 @@
                 selectedDuoItems = selectedDuoItems.filter(i => i.id !== id);
             }
 
+            // แสดงตัวเลือกเสริมเมื่อมี อะโวคาโด้
             const hasAvocado = selectedDuoItems.some(i => i.name.includes('อะโวคาโด้'));
             document.getElementById('duo-addon-section').style.display = hasAvocado ? 'block' : 'none';
             if (!hasAvocado) document.getElementById('duo-addon-check').checked = false;
 
+            // แสดงตัวเลือกน้ำจิ้มเมื่อมีผลไม้ที่ทานคู่น้ำจิ้มได้
+            const hasSauceFruit = selectedDuoItems.some(i => isSauceEligible(i.name));
+            const sauceSec = document.getElementById('duo-sauce-section');
+            if (sauceSec) {
+                sauceSec.style.display = hasSauceFruit ? 'block' : 'none';
+                if (!hasSauceFruit) {
+                    document.getElementById('duo-sauce-select').value = 'ไม่รับน้ำจิ้ม';
+                } else if (document.getElementById('duo-sauce-select').value === 'ไม่รับน้ำจิ้ม') {
+                    document.getElementById('duo-sauce-select').value = 'พริกเกลือนัวร์ (ฟรี)';
+                }
+            }
+
             updateDuoCalcPrice();
         }
 
-        // คำนวณราคาดูโอ้ตามกฎ 70 / 85 / 95 / 120 บาท
-        function calculateDuoPrice(itemA, itemB, withAddon = false) {
+        // คำนวณราคากล่องดูโอ้ (70 / 85 / 95 / 120 บาท)
+        function calculateDuoPrice(itemA, itemB, withAddon = false, withPaidSauce = false) {
             if (!itemA || !itemB) return 70;
             const isPremA = PREMIUM_FRUIT_NAMES.some(p => itemA.name.includes(p));
             const isPremB = PREMIUM_FRUIT_NAMES.some(p => itemB.name.includes(p));
@@ -500,14 +546,11 @@
             } else {
                 const priceA = Number(itemA.price) || 0;
                 const priceB = Number(itemB.price) || 0;
-                if (priceA > 60 || priceB > 60) {
-                    price = 85;
-                } else {
-                    price = 70;
-                }
+                price = (priceA > 60 || priceB > 60) ? 85 : 70;
             }
 
             if (withAddon) price += 15;
+            if (withPaidSauce) price += 20;
             return price;
         }
 
@@ -520,7 +563,11 @@
 
             if (selectedDuoItems.length === 2) {
                 const withAddon = document.getElementById('duo-addon-check').checked;
-                const price = calculateDuoPrice(selectedDuoItems[0], selectedDuoItems[1], withAddon);
+                const hasSauceFruit = selectedDuoItems.some(i => isSauceEligible(i.name));
+                const sauceSelect = document.getElementById('duo-sauce-select');
+                const withPaidSauce = hasSauceFruit && sauceSelect && sauceSelect.value.includes('+20');
+
+                const price = calculateDuoPrice(selectedDuoItems[0], selectedDuoItems[1], withAddon, withPaidSauce);
                 pricePreview.innerText = `${price} บาท`;
                 confirmBtn.disabled = false;
             } else {
@@ -532,7 +579,12 @@
         function addDuoBoxToCart() {
             if (selectedDuoItems.length !== 2) return;
             const withAddon = document.getElementById('duo-addon-check').checked;
-            const finalPrice = calculateDuoPrice(selectedDuoItems[0], selectedDuoItems[1], withAddon);
+            
+            const hasSauceFruit = selectedDuoItems.some(i => isSauceEligible(i.name));
+            const sauceSelect = document.getElementById('duo-sauce-select');
+            const withPaidSauce = hasSauceFruit && sauceSelect && sauceSelect.value.includes('+20');
+            
+            const finalPrice = calculateDuoPrice(selectedDuoItems[0], selectedDuoItems[1], withAddon, withPaidSauce);
 
             const duoId = 'DUO_' + (++duoUniqueCounter);
             const addonText = withAddon ? ' (+น้ำผึ้งมูสลี่)' : '';
@@ -548,6 +600,11 @@
             };
 
             cart[duoId] = 1;
+
+            if (hasSauceFruit && sauceSelect) {
+                cartSauces[duoId] = [sauceSelect.value];
+            }
+
             closeDuoModal();
             renderDuoCartList();
             updateCartBar();
@@ -566,11 +623,13 @@
             duoKeys.forEach(id => {
                 const item = itemDictionary[id];
                 if (!item) return;
+                const sauceName = (cartSauces[id] && cartSauces[id][0] && !cartSauces[id][0].includes('ไม่รับ')) ? cartSauces[id][0] : '';
                 html += `
                     <div class="duo-cart-item">
                         <div>
                             <div class="duo-cart-title">${item.name}</div>
                             <div class="duo-cart-sub">${item.price} บาท</div>
+                            ${sauceName ? `<div style="font-size:11px; color:var(--text-sub); margin-top:2px;">น้ำจิ้ม: <b>${sauceName}</b></div>` : ''}
                         </div>
                         <button class="btn-duo-delete" onclick="removeDuoItem('${id}')">ลบ</button>
                     </div>
@@ -582,11 +641,12 @@
         function removeDuoItem(id) {
             delete cart[id];
             delete itemDictionary[id];
+            delete cartSauces[id];
             renderDuoCartList();
             updateCartBar();
         }
 
-        /* ------------------ ฟังก์ชันเมนูปกติและตะกร้า ------------------ */
+        /* ------------------ ฟังก์ชันเมนูปกติและตะกร้าสินค้า ------------------ */
 
         function handleAdd(id, isDip = false) {
             const item = itemDictionary[id];
