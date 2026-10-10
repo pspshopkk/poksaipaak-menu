@@ -112,7 +112,7 @@
         }
         .btn-duo-delete:hover { border-color: var(--primary); color: var(--primary); }
 
-        /* รายการเลือกผลไม้ดูโอ้ใน Modal (ไม่แสดงราคาเดี่ยว) */
+        /* รายการผลไม้ดูโอ้ใน Modal (แสดงเฉพาะชื่อ ไม่แสดงราคาเดี่ยว) */
         .duo-fruit-row {
             display: flex;
             justify-content: space-between;
@@ -157,7 +157,7 @@
         .sauce-btn:hover { background: var(--gray-btn); border-color: var(--border-focus); }
         .btn-close-modal { width: 100%; border: none; background: var(--gray-btn); padding: 9px; border-radius: var(--radius-sm); margin-top: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text-main); }
 
-        /* หน้าต่างแสดงสถานะกำลังส่งคำสั่งซื้อ */
+        /* หน้าต่างแสดงสถานะกำลังส่งข้อมูล */
         .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.92); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; padding: 20px; text-align: center; backdrop-filter: blur(3px); }
         .spinner { width: 44px; height: 44px; border: 3px solid #e9ecef; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
         .loading-title { font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; }
@@ -219,7 +219,7 @@
         </div>
     </div>
 
-    <!-- Modal เลือกผลไม้ดูโอ้ (โหลดเร็วขึ้นและไม่แสดงราคาแยก) -->
+    <!-- Modal เลือกผลไม้ดูโอ้ -->
     <div class="modal-overlay" id="duo-modal">
         <div class="modal-card" style="display:flex; flex-direction:column; max-height:85vh;">
             <div class="modal-title">เลือกผลไม้ดูโอ้ (2 อย่าง)</div>
@@ -229,7 +229,7 @@
                 <div style="text-align:center; padding:20px; font-size:12px; color:var(--text-sub);">กำลังโหลดรายการผลไม้...</div>
             </div>
 
-            <!-- กล่องเลือกน้ำจิ้มสำหรับผลไม้ดูโอ้ -->
+            <!-- กล่องเลือกน้ำจิ้มสำหรับดูโอ้ -->
             <div id="duo-sauce-section" style="display:none; background:#fdfdfd; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:10px; font-size:12px;">
                 <div style="font-weight:600; color:var(--text-main); margin-bottom:6px;">เลือกน้ำจิ้ม / พริกเกลือ (ฟรี 1 อย่าง):</div>
                 <select id="duo-sauce-select" onchange="updateDuoCalcPrice()" style="width:100%; padding:7px; border:1px solid var(--border); border-radius:var(--radius-sm); font-size:13px; background:#fff; color:var(--text-main);">
@@ -292,7 +292,7 @@
         </div>
     </div>
 
-    <!-- หน้าต่างแสดงสถานะกำลังส่งข้อมูล -->
+    <!-- หน้าต่างแจ้งเตือนระหว่างส่งข้อมูล -->
     <div class="loading-overlay" id="loading-overlay">
         <div class="spinner"></div>
         <div class="loading-title">ระบบกำลังส่งคำสั่งซื้อ</div>
@@ -303,8 +303,6 @@
         const MENU_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyaPiqWEQhgM7nxSTDj67DU_8TsWVu36aJNLagaQ33OBRKGErUyiA2x3M9YiMF7kuvL/exec'; 
         const ORDER_API_URL = 'https://script.google.com/macros/s/AKfycbw_E7mdky1b9Jle_1YK6-a4SOgbm7nAHYJOtTgS3aNrizeFiOxwywT92BqI8NA7RrEeOA/exec';
         const MY_LIFF_ID = '2011847809-BCDUYMKz';
-
-        const PREMIUM_FRUIT_NAMES = ['แอปเปิ้ลเอนวี่', 'เมล่อนญี่ปุ่น', 'กีวี่', 'อะโวคาโด้'];
 
         let menuData = [], itemDictionary = {}, cart = {}, cartSauces = {};
         let activeItemId = '', activeIndex = 0;
@@ -348,7 +346,7 @@
                 menuData.forEach(item => { itemDictionary[item.id] = item; });
                 
                 renderMenu();
-                preRenderDuoFruitList(); // สร้างลิสต์ดูโอ้รอไว้ล่วงหน้าทันทีเพื่อลดอาการดีเลย์
+                preRenderDuoFruitList(); // สร้างรายการดูโอ้ไว้ล่วงหน้าทันทีเพื่อลดอาการดีเลย์
             } catch (e) {
                 console.error("Load menu error:", e);
                 document.getElementById('menu-container').innerHTML = '<div style="text-align:center; padding:30px; color:#e74c3c; font-size:13px;">ไม่สามารถโหลดรายการสินค้าได้ กรุณารีเฟรชหน้าจอ</div>';
@@ -357,6 +355,15 @@
 
         const isService = item => /บริการ|service|addon/i.test(String(item.category || ''));
         const isSauceEligible = name => !name.includes('ฝรั่งแช่บ๊วย') && /มะม่วง|สับปะรด|แอปเปิ้ล|ฝรั่ง/.test(name);
+
+        // ตรวจจับผลไม้กลุ่มพรีเมียม (ครอบคลุมเมล่อนทุกสายพันธุ์ และผลไม้ที่ราคาตั้งแต่ 90 บาทขึ้นไป)
+        function isPremiumFruit(item) {
+            if (!item) return false;
+            const name = item.name || '';
+            const price = Number(item.price) || 0;
+            const hasKeyword = /เมล่อน|เอนวี่|envy|กีวี่|กีวี|อะโวคาโด้|อะโวคาโด/i.test(name);
+            return hasKeyword || price >= 90;
+        }
 
         function renderMenu() {
             const container = document.getElementById('menu-container');
@@ -440,9 +447,8 @@
             });
         }
 
-        /* ------------------ ระบบผลไม้ดูโอ้ (โหลดทันที + ซ่อนราคาเดี่ยว) ------------------ */
+        /* ------------------ ระบบผลไม้ดูโอ้ ------------------ */
 
-        // สร้างรายการผลไม้ใส่ DOM ไว้ล่วงหน้าทันที (ไม่แสดงราคาของผลไม้)
         function preRenderDuoFruitList() {
             const listContainer = document.getElementById('duo-fruit-list');
             listContainer.innerHTML = '';
@@ -458,7 +464,6 @@
             eligibleFruits.forEach(item => {
                 const row = document.createElement('div');
                 row.className = 'duo-fruit-row';
-                // แสดงเฉพาะชื่อผลไม้เท่านั้นตามที่ต้องการ
                 row.innerHTML = `
                     <span>${item.name}</span>
                     <input type="checkbox" id="cb-duo-${item.id}" onchange="handleDuoFruitCheck(this, '${item.id}')">
@@ -474,11 +479,8 @@
             });
         }
 
-        // เปิด Modal ได้ทันทีโดยไม่ต้องรอ Render ใหม่
         function openDuoModal() {
             selectedDuoItems = [];
-            
-            // ล้างการติ๊กทั้งหมด
             document.querySelectorAll('#duo-fruit-list input[type="checkbox"]').forEach(cb => cb.checked = false);
             
             document.getElementById('duo-addon-check').checked = false;
@@ -511,12 +513,10 @@
                 selectedDuoItems = selectedDuoItems.filter(i => i.id !== id);
             }
 
-            // แสดงตัวเลือกเสริมเมื่อมี อะโวคาโด้
             const hasAvocado = selectedDuoItems.some(i => i.name.includes('อะโวคาโด้'));
             document.getElementById('duo-addon-section').style.display = hasAvocado ? 'block' : 'none';
             if (!hasAvocado) document.getElementById('duo-addon-check').checked = false;
 
-            // แสดงตัวเลือกน้ำจิ้มเมื่อมีผลไม้ที่ทานคู่น้ำจิ้มได้
             const hasSauceFruit = selectedDuoItems.some(i => isSauceEligible(i.name));
             const sauceSec = document.getElementById('duo-sauce-section');
             if (sauceSec) {
@@ -531,18 +531,17 @@
             updateDuoCalcPrice();
         }
 
-        // คำนวณราคากล่องดูโอ้ (70 / 85 / 95 / 120 บาท)
         function calculateDuoPrice(itemA, itemB, withAddon = false, withPaidSauce = false) {
             if (!itemA || !itemB) return 70;
-            const isPremA = PREMIUM_FRUIT_NAMES.some(p => itemA.name.includes(p));
-            const isPremB = PREMIUM_FRUIT_NAMES.some(p => itemB.name.includes(p));
+            const isPremA = isPremiumFruit(itemA);
+            const isPremB = isPremiumFruit(itemB);
             const premCount = (isPremA ? 1 : 0) + (isPremB ? 1 : 0);
 
             let price = 70;
             if (premCount === 2) {
-                price = 120;
+                price = 120; // พรีเมียมทั้ง 2 ชนิด (เช่น เมล่อนเขียว + เมล่อนส้ม)
             } else if (premCount === 1) {
-                price = 95;
+                price = 95;  // พรีเมียม 1 ชนิด
             } else {
                 const priceA = Number(itemA.price) || 0;
                 const priceB = Number(itemB.price) || 0;
@@ -646,7 +645,7 @@
             updateCartBar();
         }
 
-        /* ------------------ ฟังก์ชันเมนูปกติและตะกร้าสินค้า ------------------ */
+        /* ------------------ เมนูปกติและตะกร้าสินค้า ------------------ */
 
         function handleAdd(id, isDip = false) {
             const item = itemDictionary[id];
