@@ -87,7 +87,6 @@
         .btn-duo-open:hover { background: #1a252f; }
         .btn-duo-open:disabled { background: #ccc; cursor: not-allowed; }
 
-        /* รายการกล่องดูโอ้ในตะกร้า */
         .duo-cart-item {
             background: #ffffff;
             border: 1px solid var(--border);
@@ -112,7 +111,6 @@
         }
         .btn-duo-delete:hover { border-color: var(--primary); color: var(--primary); }
 
-        /* รายการผลไม้ดูโอ้ใน Modal (แสดงเฉพาะชื่อ ไม่แสดงราคาเดี่ยว) */
         .duo-fruit-row {
             display: flex;
             justify-content: space-between;
@@ -157,7 +155,6 @@
         .sauce-btn:hover { background: var(--gray-btn); border-color: var(--border-focus); }
         .btn-close-modal { width: 100%; border: none; background: var(--gray-btn); padding: 9px; border-radius: var(--radius-sm); margin-top: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text-main); }
 
-        /* หน้าต่างแสดงสถานะกำลังส่งข้อมูล */
         .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.92); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; padding: 20px; text-align: center; backdrop-filter: blur(3px); }
         .spinner { width: 44px; height: 44px; border: 3px solid #e9ecef; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
         .loading-title { font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; }
@@ -178,7 +175,7 @@
         </div>
 
         <!-- กล่องเมนูดูโอ้ -->
-        <div class="category-title">ผลไม้ดูโอ้ 2 IN 1</div>
+        <div class="category-title">เมนูพิเศษแนะนำ</div>
         <div class="duo-banner-card">
             <div>
                 <div class="duo-banner-title">ผลไม้ดูโอ้ (เลือกได้ 2 อย่าง)</div>
@@ -214,7 +211,7 @@
         </div>
 
         <div class="store-policy">
-            ขอความกรุณาลูกค้าสั่งล่วงหน้า เพื่อให้ทางร้านจัดคิวออกส่งค่ะ<br>
+            การจัดส่งดำเนินการผ่านไรเดอร์ กรุณาสั่งล่วงหน้าตามรอบจัดส่ง<br>
             ยอดสั่งซื้อขั้นต่ำ 150 บาท | ยอดสั่งซื้อครบ 200 บาทขึ้นไป จัดส่งฟรีในเขตตัวเมือง (ระยะทางไม่เกิน 7 กม.)
         </div>
     </div>
@@ -292,7 +289,6 @@
         </div>
     </div>
 
-    <!-- หน้าต่างแจ้งเตือนระหว่างส่งข้อมูล -->
     <div class="loading-overlay" id="loading-overlay">
         <div class="spinner"></div>
         <div class="loading-title">ระบบกำลังส่งคำสั่งซื้อ</div>
@@ -333,11 +329,11 @@
 
         async function loadData() {
             try {
-                let res = await fetch(MENU_SCRIPT_URL + '?action=getData');
+                let res = await fetch(`${MENU_SCRIPT_URL}?action=getData&t=${Date.now()}`);
                 let data = await res.json();
                 
                 if (!Array.isArray(data) || data.length === 0) {
-                    res = await fetch(ORDER_API_URL + '?action=getData');
+                    res = await fetch(`${ORDER_API_URL}?action=getData&t=${Date.now()}`);
                     data = await res.json();
                 }
 
@@ -346,7 +342,7 @@
                 menuData.forEach(item => { itemDictionary[item.id] = item; });
                 
                 renderMenu();
-                preRenderDuoFruitList(); // สร้างรายการดูโอ้ไว้ล่วงหน้าทันทีเพื่อลดอาการดีเลย์
+                preRenderDuoFruitList();
             } catch (e) {
                 console.error("Load menu error:", e);
                 document.getElementById('menu-container').innerHTML = '<div style="text-align:center; padding:30px; color:#e74c3c; font-size:13px;">ไม่สามารถโหลดรายการสินค้าได้ กรุณารีเฟรชหน้าจอ</div>';
@@ -356,7 +352,18 @@
         const isService = item => /บริการ|service|addon/i.test(String(item.category || ''));
         const isSauceEligible = name => !name.includes('ฝรั่งแช่บ๊วย') && /มะม่วง|สับปะรด|แอปเปิ้ล|ฝรั่ง/.test(name);
 
-        // ตรวจจับผลไม้กลุ่มพรีเมียม (ครอบคลุมเมล่อนทุกสายพันธุ์ และผลไม้ที่ราคาตั้งแต่ 90 บาทขึ้นไป)
+        // ตรวจสอบว่าเมนูนี้ต้องเลือกน้ำจิ้มหรือไม่ (ดึงจาก Sheet คอลัมน์ G ก่อน และมี Fallback)
+        function checkItemHasSauce(item) {
+            if (!item || isService(item)) return false;
+            const val = item.hasSauce !== undefined ? item.hasSauce : (item['เลือกน้ำจิ้ม'] !== undefined ? item['เลือกน้ำจิ้ม'] : item['มีน้ำจิ้ม']);
+            if (val !== undefined && val !== null && val !== '') {
+                if (typeof val === 'boolean') return val;
+                const str = String(val).trim().toLowerCase();
+                return str === 'true' || str === '1' || str === 'มี' || str === 'ใช่';
+            }
+            return isSauceEligible(item.name || '');
+        }
+
         function isPremiumFruit(item) {
             if (!item) return false;
             const name = item.name || '';
@@ -405,7 +412,9 @@
                     : `${item.price > 0 ? item.price + ' บาท' : 'ฟรี'}`;
 
                 let sauceHTML = '';
-                if (!isDip && !isService(item) && isSauceEligible(item.name) && cartQty > 0) {
+                const hasSauce = checkItemHasSauce(item);
+
+                if (!isDip && !isService(item) && hasSauce && cartQty > 0) {
                     sauceHTML = `<div class="sauce-summary-box"><div style="color:var(--text-sub); font-weight:600; margin-bottom:4px;">ตัวเลือกน้ำจิ้มที่ระบุ:</div>`;
                     for (let i = 0; i < cartQty; i++) {
                         if (!cartSauces[item.id]) cartSauces[item.id] = [];
@@ -517,7 +526,8 @@
             document.getElementById('duo-addon-section').style.display = hasAvocado ? 'block' : 'none';
             if (!hasAvocado) document.getElementById('duo-addon-check').checked = false;
 
-            const hasSauceFruit = selectedDuoItems.some(i => isSauceEligible(i.name));
+            // ตรวจสอบน้ำจิ้มในดูโอ้ด้วย checkItemHasSauce
+            const hasSauceFruit = selectedDuoItems.some(i => checkItemHasSauce(i));
             const sauceSec = document.getElementById('duo-sauce-section');
             if (sauceSec) {
                 sauceSec.style.display = hasSauceFruit ? 'block' : 'none';
@@ -539,9 +549,9 @@
 
             let price = 70;
             if (premCount === 2) {
-                price = 120; // พรีเมียมทั้ง 2 ชนิด (เช่น เมล่อนเขียว + เมล่อนส้ม)
+                price = 120;
             } else if (premCount === 1) {
-                price = 95;  // พรีเมียม 1 ชนิด
+                price = 95;
             } else {
                 const priceA = Number(itemA.price) || 0;
                 const priceB = Number(itemB.price) || 0;
@@ -562,7 +572,7 @@
 
             if (selectedDuoItems.length === 2) {
                 const withAddon = document.getElementById('duo-addon-check').checked;
-                const hasSauceFruit = selectedDuoItems.some(i => isSauceEligible(i.name));
+                const hasSauceFruit = selectedDuoItems.some(i => checkItemHasSauce(i));
                 const sauceSelect = document.getElementById('duo-sauce-select');
                 const withPaidSauce = hasSauceFruit && sauceSelect && sauceSelect.value.includes('+20');
 
@@ -579,7 +589,7 @@
             if (selectedDuoItems.length !== 2) return;
             const withAddon = document.getElementById('duo-addon-check').checked;
             
-            const hasSauceFruit = selectedDuoItems.some(i => isSauceEligible(i.name));
+            const hasSauceFruit = selectedDuoItems.some(i => checkItemHasSauce(i));
             const sauceSelect = document.getElementById('duo-sauce-select');
             const withPaidSauce = hasSauceFruit && sauceSelect && sauceSelect.value.includes('+20');
             
@@ -649,8 +659,12 @@
 
         function handleAdd(id, isDip = false) {
             const item = itemDictionary[id];
-            if (!isDip && !isService(item) && isSauceEligible(item.name)) openSauceModal(id, cart[id] || 0);
-            else { cart[id] = (cart[id] || 0) + 1; renderMenu(); }
+            if (!isDip && !isService(item) && checkItemHasSauce(item)) {
+                openSauceModal(id, cart[id] || 0);
+            } else {
+                cart[id] = (cart[id] || 0) + 1;
+                renderMenu();
+            }
         }
 
         function handleMinus(id) {
