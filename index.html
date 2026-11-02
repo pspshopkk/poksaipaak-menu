@@ -58,75 +58,40 @@
         .sauce-change-btn { background: none; border: 1px solid var(--border); padding: 2px 8px; border-radius: 4px; font-size: 11px; color: var(--text-sub); cursor: pointer; }
         .sauce-change-btn:hover { border-color: var(--text-main); color: var(--text-main); }
 
-        /* การ์ดเมนูดูโอ้ */
         .duo-banner-card {
-            background: #ffffff;
-            border: 1px solid var(--text-main);
-            border-radius: var(--radius-md);
-            padding: 16px;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
+            background: #ffffff; border: 1px solid var(--text-main); border-radius: var(--radius-md);
+            padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 12px;
         }
         .duo-banner-title { font-size: 15px; font-weight: 700; color: var(--text-main); }
         .duo-banner-desc { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
         .duo-banner-price { font-size: 13px; font-weight: 600; color: var(--primary); margin-top: 2px; }
         .btn-duo-open {
-            background: var(--text-main);
-            color: #ffffff;
-            border: none;
-            border-radius: var(--radius-sm);
-            padding: 9px 18px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
+            background: var(--text-main); color: #ffffff; border: none; border-radius: var(--radius-sm);
+            padding: 9px 18px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
         }
         .btn-duo-open:hover { background: #1a252f; }
         .btn-duo-open:disabled { background: #ccc; cursor: not-allowed; }
 
         .duo-cart-item {
-            background: #ffffff;
-            border: 1px solid var(--border);
-            border-left: 3px solid var(--text-main);
-            border-radius: var(--radius-sm);
-            padding: 10px 14px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: #ffffff; border: 1px solid var(--border); border-left: 3px solid var(--text-main);
+            border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 8px; display: flex;
+            justify-content: space-between; align-items: center;
         }
         .duo-cart-title { font-size: 13px; font-weight: 600; color: var(--text-main); }
         .duo-cart-sub { font-size: 12px; color: var(--primary); font-weight: 600; }
-        .btn-duo-delete {
-            background: none;
-            border: 1px solid var(--border);
-            color: var(--text-sub);
-            border-radius: 4px;
-            padding: 3px 8px;
-            font-size: 11px;
-            cursor: pointer;
-        }
+        .btn-duo-delete { background: none; border: 1px solid var(--border); color: var(--text-sub); border-radius: 4px; padding: 3px 8px; font-size: 11px; cursor: pointer; }
         .btn-duo-delete:hover { border-color: var(--primary); color: var(--primary); }
 
         .duo-fruit-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 14px;
-            border-bottom: 1px solid var(--border);
-            cursor: pointer;
-            font-size: 13.5px;
-            font-weight: 500;
-            color: var(--text-main);
-            transition: background 0.15s;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 14px; border-bottom: 1px solid var(--border); cursor: pointer;
+            font-size: 13.5px; font-weight: 500; color: var(--text-main); transition: background 0.15s;
         }
         .duo-fruit-row:last-child { border-bottom: none; }
         .duo-fruit-row:hover { background: var(--gray-btn); }
         .duo-fruit-row input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
 
+        /* ส่วนข้อมูลการจัดส่ง */
         .delivery-section { background: var(--card-bg); border-radius: var(--radius-md); border: 1px solid var(--border); padding: 20px; margin-top: 35px; }
         .delivery-section h3 { font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 16px; }
         .form-row { margin-bottom: 14px; }
@@ -134,6 +99,12 @@
         .form-row label span.req { color: var(--primary); }
         .form-row input, .form-row textarea { width: 100%; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 12px; font-size: 14px; background: #fff; color: var(--text-main); }
         .form-row input:focus, .form-row textarea:focus { outline: none; border-color: var(--text-main); }
+        
+        .suggest-alert-tag {
+            display: none; background: #e8f8f0; border: 1px solid #27ae60;
+            color: #27ae60; font-size: 12px; font-weight: 600;
+            padding: 6px 10px; border-radius: var(--radius-sm); margin-top: 6px;
+        }
 
         .store-policy { margin-top: 25px; padding: 15px; font-size: 12px; color: var(--text-sub); line-height: 1.8; text-align: center; }
 
@@ -146,7 +117,6 @@
         .btn-confirm-order:hover { background: var(--primary-dark); }
         .btn-confirm-order:disabled { background: #e9ecef; color: #adb5bd; cursor: not-allowed; }
 
-        /* Modal น้ำจิ้ม และ ดูโอ้ */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
         .modal-card { background: #ffffff; border-radius: var(--radius-md); width: 100%; max-width: 380px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .modal-title { font-size: 15px; font-weight: 700; color: var(--text-main); text-align: center; }
@@ -171,11 +141,11 @@
         </div>
 
         <div class="market-notice">
-            ราคาและปริมาณผลไม้อาจมีการปรับเปลี่ยนตามกลไกราคาตลาดในแต่ละวัน
+            ราคาและปริมาณผลไม้อาจมีการปรับเปลี่ยนตามราคาต้นทุนในตลาดแต่ละวัน
         </div>
 
         <!-- กล่องเมนูดูโอ้ -->
-        <div class="category-title">เมนูพิเศษแนะนำ</div>
+        <div class="category-title">สองความสดชื่นในกล่องเดียว</div>
         <div class="duo-banner-card">
             <div>
                 <div class="duo-banner-title">ผลไม้ดูโอ้ (เลือกได้ 2 อย่าง)</div>
@@ -190,15 +160,17 @@
             <div style="text-align:center; padding:40px 0; color:#95a5a6; font-size:13px;">กำลังโหลดรายการสินค้า...</div>
         </div>
 
+        <!-- ข้อมูลการจัดส่ง: บังคับรูปแบบเบอร์โทร xxx-xxx-xxxx อัตโนมัติ -->
         <div class="delivery-section">
             <h3>ข้อมูลการจัดส่ง</h3>
             <div class="form-row">
-                <label>ชื่อลูกค้า <span class="req">*</span></label>
-                <input type="text" id="cust-name" name="name" autocomplete="name" placeholder="ระบุชื่อจริง หรือชื่อเรียก">
+                <label>เบอร์โทรศัพท์ติดต่อ <span class="req">*</span></label>
+                <input type="tel" id="cust-phone" name="tel" maxlength="12" placeholder="0xx-xxx-xxxx" oninput="handlePhoneInput(this)">
+                <div id="cust-suggest-badge" class="suggest-alert-tag"></div>
             </div>
             <div class="form-row">
-                <label>เบอร์โทรศัพท์ติดต่อ <span class="req">*</span></label>
-                <input type="tel" id="cust-phone" name="tel" autocomplete="tel" placeholder="เช่น 0812345678">
+                <label>ชื่อลูกค้า <span class="req">*</span></label>
+                <input type="text" id="cust-name" name="name" autocomplete="name" placeholder="กรุณากรอกชื่อผู้รับสินค้า">
             </div>
             <div class="form-row">
                 <label>สถานที่จัดส่ง <span class="req">*</span></label>
@@ -211,12 +183,12 @@
         </div>
 
         <div class="store-policy">
-            ร้านออกส่งเอง เลยสามารถรับคิวได้จำกัดนะคะ รบกวนสั่งล่วงหน้าหรือสอบถามคิวก่อนได้ค่ะ<br>
+            ร้านออกส่งเองตามรอบ รบกวนลูกค้าสั่งล่วงหน้า เพื่อให้ร้านจัดคิวออกส่งค่ะ<br>
             ยอดสั่งซื้อขั้นต่ำ 150 บาท | ยอดสั่งซื้อครบ 200 บาทขึ้นไป จัดส่งฟรีในเขตตัวเมือง (ระยะทางไม่เกิน 7 กม.)
         </div>
     </div>
 
-    <!-- Modal เลือกผลไม้ดูโอ้ -->
+    <!-- Modal ดูโอ้ -->
     <div class="modal-overlay" id="duo-modal">
         <div class="modal-card" style="display:flex; flex-direction:column; max-height:85vh;">
             <div class="modal-title">เลือกผลไม้ดูโอ้ (2 อย่าง)</div>
@@ -226,7 +198,6 @@
                 <div style="text-align:center; padding:20px; font-size:12px; color:var(--text-sub);">กำลังโหลดรายการผลไม้...</div>
             </div>
 
-            <!-- กล่องเลือกน้ำจิ้มสำหรับดูโอ้ -->
             <div id="duo-sauce-section" style="display:none; background:#fdfdfd; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:10px; font-size:12px;">
                 <div style="font-weight:600; color:var(--text-main); margin-bottom:6px;">เลือกน้ำจิ้ม / พริกเกลือ (ฟรี 1 อย่าง):</div>
                 <select id="duo-sauce-select" onchange="updateDuoCalcPrice()" style="width:100%; padding:7px; border:1px solid var(--border); border-radius:var(--radius-sm); font-size:13px; background:#fff; color:var(--text-main);">
@@ -240,7 +211,6 @@
                 </select>
             </div>
 
-            <!-- กล่องเพิ่มท็อปปิ้งสำหรับอะโวคาโด้ -->
             <div id="duo-addon-section" style="display:none; background:#fdfdfd; border:1px solid var(--border); border-radius:var(--radius-sm); padding:8px 12px; margin-bottom:12px; font-size:12px;">
                 <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
                     <input type="checkbox" id="duo-addon-check" onchange="updateDuoCalcPrice()">
@@ -260,7 +230,7 @@
         </div>
     </div>
 
-    <!-- Modal เลือกน้ำจิ้มสำหรับผลไม้เดี่ยว -->
+    <!-- Modal น้ำจิ้ม -->
     <div class="modal-overlay" id="sauce-modal">
         <div class="modal-card">
             <div class="modal-title" id="modal-product-name">รายการสินค้า</div>
@@ -278,7 +248,6 @@
         </div>
     </div>
 
-    <!-- แถบยืนยันคำสั่งซื้อ -->
     <div class="floating-cart-bar">
         <div class="cart-inner">
             <div class="cart-total-info">
@@ -304,6 +273,38 @@
         let activeItemId = '', activeIndex = 0;
         let selectedDuoItems = [];
         let duoUniqueCounter = 0;
+        let customerDatabase = {};
+
+        // ฟังก์ชันบังคับจัดรูปแบบ xxx-xxx-xxxx
+        function formatPhoneDigits(val) {
+            let digits = String(val).replace(/\D/g, '').slice(0, 10);
+            if (digits.length > 6) {
+                return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+            } else if (digits.length > 3) {
+                return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+            }
+            return digits;
+        }
+
+        function handlePhoneInput(input) {
+            input.value = formatPhoneDigits(input.value);
+            const rawDigits = input.value.replace(/\D/g, '');
+            const badge = document.getElementById('cust-suggest-badge');
+
+            if (rawDigits.length >= 9 && customerDatabase[rawDigits]) {
+                const c = customerDatabase[rawDigits];
+                if (c.name && !document.getElementById('cust-name').value) {
+                    document.getElementById('cust-name').value = c.name;
+                }
+                if (c.address) {
+                    document.getElementById('cust-address').value = c.address;
+                }
+                badge.innerText = `✓ พบข้อมูลเดิม: คุณ ${c.name || 'ลูกค้าประจำ'} (ดึงสถานที่จัดส่งให้อัตโนมัติ)`;
+                badge.style.display = 'block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
 
         function loadCustomerMemory() {
             try {
@@ -311,13 +312,37 @@
                 const p = localStorage.getItem('poksai_customer_phone');
                 const a = localStorage.getItem('poksai_customer_address');
                 if (n) document.getElementById('cust-name').value = n;
-                if (p) document.getElementById('cust-phone').value = p;
+                if (p) {
+                    const phoneEl = document.getElementById('cust-phone');
+                    phoneEl.value = formatPhoneDigits(p);
+                    handlePhoneInput(phoneEl);
+                }
                 if (a) document.getElementById('cust-address').value = a;
+            } catch (e) {}
+        }
+
+        async function fetchCustomerDatabase() {
+            try {
+                const res = await fetch(`${ORDER_API_URL}?action=getCustomers&t=${Date.now()}`);
+                const result = await res.json();
+                if (result.status === 'success' && Array.isArray(result.data)) {
+                    result.data.forEach(c => {
+                        const rawDigits = String(c.rawPhone || c.phone || '').replace(/\D/g, '');
+                        if (rawDigits) {
+                            customerDatabase[rawDigits] = {
+                                name: c.name || '',
+                                address: c.address || '',
+                                phone: formatPhoneDigits(rawDigits)
+                            };
+                        }
+                    });
+                }
             } catch (e) {}
         }
 
         async function initLiff() {
             loadCustomerMemory();
+            fetchCustomerDatabase();
             try { 
                 await liff.init({ liffId: MY_LIFF_ID }); 
                 if (liff.isLoggedIn() && !document.getElementById('cust-name').value) {
@@ -344,7 +369,6 @@
                 renderMenu();
                 preRenderDuoFruitList();
             } catch (e) {
-                console.error("Load menu error:", e);
                 document.getElementById('menu-container').innerHTML = '<div style="text-align:center; padding:30px; color:#e74c3c; font-size:13px;">ไม่สามารถโหลดรายการสินค้าได้ กรุณารีเฟรชหน้าจอ</div>';
             }
         }
@@ -352,7 +376,6 @@
         const isService = item => /บริการ|service|addon/i.test(String(item.category || ''));
         const isSauceEligible = name => !name.includes('ฝรั่งแช่บ๊วย') && /มะม่วง|สับปะรด|แอปเปิ้ล|ฝรั่ง/.test(name);
 
-        // ตรวจสอบว่าเมนูนี้ต้องเลือกน้ำจิ้มหรือไม่ (ดึงจาก Sheet คอลัมน์ G ก่อน และมี Fallback)
         function checkItemHasSauce(item) {
             if (!item || isService(item)) return false;
             const val = item.hasSauce !== undefined ? item.hasSauce : (item['เลือกน้ำจิ้ม'] !== undefined ? item['เลือกน้ำจิ้ม'] : item['มีน้ำจิ้ม']);
@@ -456,8 +479,7 @@
             });
         }
 
-        /* ------------------ ระบบผลไม้ดูโอ้ ------------------ */
-
+        /* ------------------ ดูโอ้ ------------------ */
         function preRenderDuoFruitList() {
             const listContainer = document.getElementById('duo-fruit-list');
             listContainer.innerHTML = '';
@@ -526,7 +548,6 @@
             document.getElementById('duo-addon-section').style.display = hasAvocado ? 'block' : 'none';
             if (!hasAvocado) document.getElementById('duo-addon-check').checked = false;
 
-            // ตรวจสอบน้ำจิ้มในดูโอ้ด้วย checkItemHasSauce
             const hasSauceFruit = selectedDuoItems.some(i => checkItemHasSauce(i));
             const sauceSec = document.getElementById('duo-sauce-section');
             if (sauceSec) {
@@ -655,8 +676,7 @@
             updateCartBar();
         }
 
-        /* ------------------ เมนูปกติและตะกร้าสินค้า ------------------ */
-
+        /* ------------------ ตะกร้าสินค้า ------------------ */
         function handleAdd(id, isDip = false) {
             const item = itemDictionary[id];
             if (!isDip && !isService(item) && checkItemHasSauce(item)) {
@@ -708,13 +728,17 @@
         async function submitOrder() {
             if (!Object.keys(cart).length) { alert('กรุณาเลือกรายการสินค้าอย่างน้อย 1 รายการ'); return; }
 
-            const name = document.getElementById('cust-name').value.trim();
             const phone = document.getElementById('cust-phone').value.trim();
+            const name = document.getElementById('cust-name').value.trim();
             const address = document.getElementById('cust-address').value.trim();
             const note = document.getElementById('cust-note').value.trim();
 
+            if (!phone || phone.replace(/\D/g, '').length < 9) { 
+                alert('กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง (เช่น 084-512-8740)'); 
+                document.getElementById('cust-phone').focus(); 
+                return; 
+            }
             if (!name) { alert('กรุณากรอกชื่อลูกค้า'); document.getElementById('cust-name').focus(); return; }
-            if (!phone) { alert('กรุณากรอกเบอร์โทรศัพท์'); document.getElementById('cust-phone').focus(); return; }
             if (!address) { alert('กรุณากรอกสถานที่จัดส่ง'); document.getElementById('cust-address').focus(); return; }
 
             const loadingOverlay = document.getElementById('loading-overlay');
