@@ -4,148 +4,343 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ปอกใส่ปาก - ผลไม้พร้อมทาน</title>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- โหลดฟอนต์ Prompt (ไม่มีหัว สไตล์โมเดิร์น) และ Sarabun -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         :root {
-            --primary: #c0392b;
-            --primary-dark: #962d22;
-            --text-main: #2c3e50;
-            --text-sub: #7f8c8d;
-            --bg-page: #f8f9fa;
-            --card-bg: #ffffff;
-            --border: #e9ecef;
-            --border-focus: #bdc3c7;
-            --gray-btn: #f1f3f5;
-            --gray-btn-hover: #e9ecef;
+            --primary: #800020;
+            --primary-dark: #5c0017;
+            --accent: #D45060;
+            --text-main: #332224;
+            --text-sub: #7a5f62;
+            --bg-page: #FFF9F2;
+            --card-bg: #FFFFFF;
+            --border: #F3E6D5;
+            --border-focus: #D45060;
+            --gray-btn: #F3E6D5;
+            --gray-btn-hover: #e8d7c1;
             --radius-sm: 6px;
             --radius-md: 10px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Sarabun', sans-serif; }
-        body { background-color: var(--bg-page); color: var(--text-main); line-height: 1.5; padding-bottom: 120px; }
-        .container { max-width: 600px; margin: 0 auto; padding: 24px 16px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Sarabun', sans-serif; font-size: 14px; }
+        body { background-color: var(--bg-page); color: var(--text-main); line-height: 1.6; padding-bottom: 130px; font-size: 15px; }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px 16px;
+            width: 100%;
+        }
 
-        .brand-header { text-align: center; padding: 20px 0 10px; }
-        .brand-header h1 { font-size: 24px; font-weight: 700; color: var(--text-main); letter-spacing: 0.5px; }
-        .brand-header p { font-size: 13px; color: var(--text-sub); margin-top: 4px; }
+        /* ส่วนหัวร้านค้า */
+        .brand-header { text-align: center; padding: 16px 0 24px; }
+        .brand-header h1 {
+            font-family: 'Prompt', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 0.5px;
+            line-height: 1.25;
+        }
+        .brand-header p {
+            font-size: 14px;
+            color: var(--text-sub);
+            margin-top: 10px;
+            line-height: 1.7;
+            text-align: center;
+        }
 
-        .market-notice { background: #ffffff; border: 1px solid var(--border); border-left: 3px solid var(--primary); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 12px; color: var(--text-sub); margin: 20px 0 25px; }
+        .category-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 30px 0 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .category-title::after { content: ''; flex: 1; height: 1.5px; background: var(--border); }
 
-        .category-title { font-size: 15px; font-weight: 700; color: var(--text-main); margin: 28px 0 12px; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
-        .category-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        /* Responsive Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 18px;
+        }
 
-        .product-card { background: var(--card-bg); border-radius: var(--radius-md); border: 1px solid var(--border); padding: 14px 16px; margin-bottom: 10px; display: flex; flex-direction: column; }
-        .product-main { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-        .product-title { font-size: 14px; font-weight: 600; color: var(--text-main); }
-        .product-price { color: var(--primary); font-weight: 700; font-size: 14px; margin-left: 6px; }
-        .product-desc { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
-        .product-stock-tag { font-size: 11px; margin-top: 4px; font-weight: 500; }
+        @media (max-width: 480px) {
+            .container { padding: 16px 12px; }
+            .brand-header h1 { font-size: 28px; }
+            .product-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+        }
+
+        .product-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 160px;
+            transition: transform 0.15s, border-color 0.15s;
+        }
+        .product-card:hover { border-color: var(--border-focus); }
+
+        .product-main {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            flex: 1;
+            gap: 10px;
+        }
+
+        .product-info-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .product-title {
+            font-size: 15.5px;
+            font-weight: 600;
+            color: var(--text-main);
+            line-height: 1.35;
+        }
+        .product-price {
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 15.5px;
+            margin-top: 2px;
+        }
+        .product-desc {
+            font-size: 14px;
+            color: var(--text-sub);
+            margin-top: 2px;
+            line-height: 1.4;
+        }
+        .product-stock-tag {
+            font-size: 14px;
+            margin-top: 4px;
+            font-weight: 500;
+        }
         .stock-available { color: #27ae60; }
-        .stock-out { color: #95a5a6; }
+        .stock-out { color: var(--text-sub); }
         .out-of-stock-text { text-decoration: line-through; opacity: 0.5; }
 
-        .qty-controls { display: flex; align-items: center; gap: 6px; }
-        .qty-btn { width: 32px; height: 32px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--gray-btn); color: var(--text-main); font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .qty-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: auto;
+            gap: 6px;
+        }
+        .qty-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--gray-btn);
+            color: var(--primary);
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
         .qty-btn:hover { background: var(--gray-btn-hover); }
-        .qty-number { font-size: 14px; font-weight: 600; width: 22px; text-align: center; }
-        .btn-select-init { background: var(--text-main); color: #fff; border: none; border-radius: var(--radius-sm); padding: 7px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
-        .btn-select-init:hover { background: #1a252f; }
-        .btn-select-init:disabled { background: #e9ecef; color: #adb5bd; cursor: not-allowed; }
+        .qty-number {
+            font-size: 15px;
+            font-weight: 600;
+            text-align: center;
+            flex: 1;
+        }
+        .btn-select-init {
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+        }
+        .btn-select-init:hover { background: var(--primary-dark); }
+        .btn-select-init:disabled { background: var(--border); color: var(--text-sub); cursor: not-allowed; }
 
-        .sauce-summary-box { background: #fdfdfd; border-radius: var(--radius-sm); padding: 8px 12px; margin-top: 10px; font-size: 12px; border: 1px solid var(--border); }
-        .sauce-item-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
-        .sauce-change-btn { background: none; border: 1px solid var(--border); padding: 2px 8px; border-radius: 4px; font-size: 11px; color: var(--text-sub); cursor: pointer; }
-        .sauce-change-btn:hover { border-color: var(--text-main); color: var(--text-main); }
+        .sauce-summary-box {
+            background: var(--bg-page);
+            border-radius: var(--radius-sm);
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 14px;
+            border: 1px solid var(--border);
+        }
+        .sauce-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0;
+            font-size: 14px;
+        }
+        .sauce-change-btn {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: var(--primary);
+            cursor: pointer;
+            flex-shrink: 0;
+            font-weight: 600;
+        }
+        .sauce-change-btn:hover { border-color: var(--primary); background: var(--gray-btn); }
 
+        /* การ์ดเมนูดูโอ้ */
         .duo-banner-card {
-            background: #ffffff; border: 1px solid var(--text-main); border-radius: var(--radius-md);
-            padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 12px;
+            background: #ffffff;
+            border: 1.5px solid var(--primary);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
         }
-        .duo-banner-title { font-size: 15px; font-weight: 700; color: var(--text-main); }
-        .duo-banner-desc { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
-        .duo-banner-price { font-size: 13px; font-weight: 600; color: var(--primary); margin-top: 2px; }
+        .duo-banner-title { font-size: 17px; font-weight: 700; color: var(--primary); }
+        .duo-banner-desc { font-size: 14px; color: var(--text-sub); margin-top: 2px; }
+        .duo-banner-price { font-size: 15px; font-weight: 700; color: var(--accent); margin-top: 2px; }
         .btn-duo-open {
-            background: var(--text-main); color: #ffffff; border: none; border-radius: var(--radius-sm);
-            padding: 9px 18px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 10px 18px;
+            font-size: 14.5px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
         }
-        .btn-duo-open:hover { background: #1a252f; }
-        .btn-duo-open:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-duo-open:hover { background: var(--primary-dark); }
+        .btn-duo-open:disabled { background: var(--border); color: var(--text-sub); cursor: not-allowed; }
 
         .duo-cart-item {
-            background: #ffffff; border: 1px solid var(--border); border-left: 3px solid var(--text-main);
-            border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 8px; display: flex;
-            justify-content: space-between; align-items: center;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .duo-cart-title { font-size: 13px; font-weight: 600; color: var(--text-main); }
-        .duo-cart-sub { font-size: 12px; color: var(--primary); font-weight: 600; }
-        .btn-duo-delete { background: none; border: 1px solid var(--border); color: var(--text-sub); border-radius: 4px; padding: 3px 8px; font-size: 11px; cursor: pointer; }
-        .btn-duo-delete:hover { border-color: var(--primary); color: var(--primary); }
+        .duo-cart-title { font-size: 15px; font-weight: 600; color: var(--text-main); }
+        .duo-cart-sub { font-size: 14.5px; color: var(--accent); font-weight: 700; }
+        .btn-duo-delete {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            color: var(--accent);
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-duo-delete:hover { border-color: var(--accent); background: var(--bg-page); }
 
         .duo-fruit-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 14px; border-bottom: 1px solid var(--border); cursor: pointer;
-            font-size: 13.5px; font-weight: 500; color: var(--text-main); transition: background 0.15s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-main);
+            transition: background 0.15s;
         }
         .duo-fruit-row:last-child { border-bottom: none; }
-        .duo-fruit-row:hover { background: var(--gray-btn); }
-        .duo-fruit-row input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+        .duo-fruit-row:hover { background: var(--bg-page); }
+        .duo-fruit-row input[type="checkbox"] { width: 19px; height: 19px; cursor: pointer; }
 
         /* ส่วนข้อมูลการจัดส่ง */
-        .delivery-section { background: var(--card-bg); border-radius: var(--radius-md); border: 1px solid var(--border); padding: 20px; margin-top: 35px; }
-        .delivery-section h3 { font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 16px; }
-        .form-row { margin-bottom: 14px; }
-        .form-row label { display: block; font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 5px; }
+        .delivery-section {
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            padding: 24px;
+            margin: 35px auto 0 auto;
+            max-width: 800px;
+        }
+        .delivery-section h3 { font-size: 18px; font-weight: 700; color: var(--primary); margin-bottom: 18px; }
+        .form-row { margin-bottom: 16px; }
+        .form-row label { display: block; font-size: 14.5px; font-weight: 600; color: var(--text-main); margin-bottom: 6px; }
         .form-row label span.req { color: var(--primary); }
-        .form-row input, .form-row textarea { width: 100%; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 12px; font-size: 14px; background: #fff; color: var(--text-main); }
-        .form-row input:focus, .form-row textarea:focus { outline: none; border-color: var(--text-main); }
+        .form-row input, .form-row textarea { width: 100%; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 15px; background: #fff; color: var(--text-main); }
+        .form-row input:focus, .form-row textarea:focus { outline: none; border-color: var(--border-focus); }
         
         .suggest-alert-tag {
             display: none; background: #e8f8f0; border: 1px solid #27ae60;
-            color: #27ae60; font-size: 12px; font-weight: 600;
-            padding: 6px 10px; border-radius: var(--radius-sm); margin-top: 6px;
+            color: #27ae60; font-size: 14px; font-weight: 600;
+            padding: 8px 12px; border-radius: var(--radius-sm); margin-top: 6px;
         }
 
-        .store-policy { margin-top: 25px; padding: 15px; font-size: 12px; color: var(--text-sub); line-height: 1.8; text-align: center; }
+        .store-policy { margin: 25px auto 0 auto; padding: 16px; font-size: 14px; color: var(--text-sub); line-height: 1.8; text-align: center; max-width: 800px; }
 
-        .floating-cart-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #ffffff; border-top: 1px solid var(--border); padding: 14px 20px; box-shadow: 0 -4px 12px rgba(0,0,0,0.03); z-index: 99; }
-        .cart-inner { max-width: 600px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .floating-cart-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #ffffff; border-top: 1px solid var(--border); padding: 14px 20px; box-shadow: 0 -4px 14px rgba(0,0,0,0.05); z-index: 99; }
+        .cart-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
         .cart-total-info { display: flex; flex-direction: column; }
-        .cart-item-count { font-size: 12px; color: var(--text-sub); }
-        .cart-price-sum { font-size: 18px; font-weight: 700; color: var(--primary); }
-        .btn-confirm-order { background: var(--primary); color: #fff; border: none; border-radius: var(--radius-sm); padding: 10px 24px; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .cart-item-count { font-size: 14px; color: var(--text-sub); }
+        .cart-price-sum { font-size: 20px; font-weight: 700; color: var(--primary); }
+        .btn-confirm-order { background: var(--primary); color: #fff; border: none; border-radius: var(--radius-sm); padding: 10px 24px; font-size: 15px; font-weight: 600; cursor: pointer; }
         .btn-confirm-order:hover { background: var(--primary-dark); }
-        .btn-confirm-order:disabled { background: #e9ecef; color: #adb5bd; cursor: not-allowed; }
+        .btn-confirm-order:disabled { background: var(--border); color: var(--text-sub); cursor: not-allowed; }
 
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
-        .modal-card { background: #ffffff; border-radius: var(--radius-md); width: 100%; max-width: 380px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .modal-title { font-size: 15px; font-weight: 700; color: var(--text-main); text-align: center; }
-        .modal-sub { font-size: 12px; color: var(--text-sub); text-align: center; margin: 4px 0 16px; }
-        .sauce-btn { width: 100%; text-align: left; padding: 10px 14px; margin-bottom: 6px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: #fff; font-size: 13px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--text-main); }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal-card { background: #ffffff; border-radius: var(--radius-md); width: 100%; max-width: 400px; padding: 22px; box-shadow: 0 10px 25px rgba(0,0,0,0.12); }
+        .modal-title { font-size: 18px; font-weight: 700; color: var(--primary); text-align: center; }
+        .modal-sub { font-size: 14px; color: var(--text-sub); text-align: center; margin: 4px 0 16px; }
+        .sauce-btn { width: 100%; text-align: left; padding: 11px 14px; margin-bottom: 6px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-page); font-size: 14.5px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--text-main); font-weight: 500; }
         .sauce-btn:hover { background: var(--gray-btn); border-color: var(--border-focus); }
-        .btn-close-modal { width: 100%; border: none; background: var(--gray-btn); padding: 9px; border-radius: var(--radius-sm); margin-top: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text-main); }
+        .btn-close-modal { width: 100%; border: none; background: var(--gray-btn); padding: 10px; border-radius: var(--radius-sm); margin-top: 8px; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--text-main); }
 
         .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.92); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; padding: 20px; text-align: center; backdrop-filter: blur(3px); }
-        .spinner { width: 44px; height: 44px; border: 3px solid #e9ecef; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
-        .loading-title { font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; }
-        .loading-sub { font-size: 13px; color: var(--text-sub); }
+        .spinner { width: 44px; height: 44px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
+        .loading-title { font-size: 18px; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+        .loading-sub { font-size: 14.5px; color: var(--text-sub); }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
     <div class="container">
+        <!-- ส่วนหัวร้านค้า: สโลแกน 2 บรรทัดตามที่กำหนด -->
         <div class="brand-header">
             <h1>ปอกใส่ปาก</h1>
-            <p>ผลไม้สดพร้อมทาน คุณภาพมาตรฐานคัดเกรด</p>
-        </div>
-
-        <div class="market-notice">
-            ราคาและปริมาณผลไม้อาจมีการปรับเปลี่ยนตามราคาต้นทุนในตลาดแต่ละวัน
+            <p>
+                เนื่องจากราคาผลไม้ในตลาดมีการเปลี่ยนแปลงอยู่ตลอด ทางร้านต้องขออนุญาตปรับเปลี่ยนปริมาณ<br>
+                และราคาสินค้าตามราคาตลาด เพื่อให้สอดคล้องกับต้นทุนค่ะ ทางร้านจะเลือกผลไม้ที่คุณภาพดีที่สุดเพื่อเมนูโปรดทุก ๆ กล่องของลูกค้าค่ะ
+            </p>
         </div>
 
         <!-- กล่องเมนูดูโอ้ -->
-        <div class="category-title">สองความสดชื่นในกล่องเดียว</div>
+        <div class="category-title">เมนูพิเศษแนะนำ</div>
         <div class="duo-banner-card">
             <div>
                 <div class="duo-banner-title">ผลไม้ดูโอ้ (เลือกได้ 2 อย่าง)</div>
@@ -156,11 +351,12 @@
         </div>
         <div id="duo-cart-container"></div>
 
+        <!-- รายการเมนูสินค้าแบบ Responsive Grid -->
         <div id="menu-container">
-            <div style="text-align:center; padding:40px 0; color:#95a5a6; font-size:13px;">กำลังโหลดรายการสินค้า...</div>
+            <div style="text-align:center; padding:40px 0; color:var(--text-sub); font-size:14px;">กำลังโหลดรายการสินค้า...</div>
         </div>
 
-        <!-- ข้อมูลการจัดส่ง: บังคับรูปแบบเบอร์โทร xxx-xxx-xxxx อัตโนมัติ -->
+        <!-- ฟอร์มข้อมูลการจัดส่ง -->
         <div class="delivery-section">
             <h3>ข้อมูลการจัดส่ง</h3>
             <div class="form-row">
@@ -170,7 +366,7 @@
             </div>
             <div class="form-row">
                 <label>ชื่อลูกค้า <span class="req">*</span></label>
-                <input type="text" id="cust-name" name="name" autocomplete="name" placeholder="กรุณากรอกชื่อผู้รับสินค้า">
+                <input type="text" id="cust-name" name="name" autocomplete="name" placeholder="ระบุชื่อจริง หรือชื่อเรียก">
             </div>
             <div class="form-row">
                 <label>สถานที่จัดส่ง <span class="req">*</span></label>
@@ -183,24 +379,24 @@
         </div>
 
         <div class="store-policy">
-            ร้านออกส่งเองตามรอบ รบกวนลูกค้าสั่งล่วงหน้า เพื่อให้ร้านจัดคิวออกส่งค่ะ<br>
+            การจัดส่งดำเนินการผ่านไรเดอร์ กรุณาสั่งล่วงหน้าตามรอบจัดส่ง<br>
             ยอดสั่งซื้อขั้นต่ำ 150 บาท | ยอดสั่งซื้อครบ 200 บาทขึ้นไป จัดส่งฟรีในเขตตัวเมือง (ระยะทางไม่เกิน 7 กม.)
         </div>
     </div>
 
-    <!-- Modal ดูโอ้ -->
+    <!-- Modal เลือกผลไม้ดูโอ้ -->
     <div class="modal-overlay" id="duo-modal">
         <div class="modal-card" style="display:flex; flex-direction:column; max-height:85vh;">
             <div class="modal-title">เลือกผลไม้ดูโอ้ (2 อย่าง)</div>
-            <div class="modal-sub">เลือกผลไม้ที่ต้องการ <span id="duo-count-label" style="font-weight:600; color:var(--primary);">(เลือกแล้ว 0/2 อย่าง)</span></div>
+            <div class="modal-sub">เลือกผลไม้ที่ต้องการ <span id="duo-count-label" style="font-weight:600; color:var(--primary); font-size:14px;">(เลือกแล้ว 0/2 อย่าง)</span></div>
             
             <div id="duo-fruit-list" style="overflow-y:auto; flex:1; max-height:260px; border:1px solid var(--border); border-radius:var(--radius-sm); margin-bottom:12px;">
-                <div style="text-align:center; padding:20px; font-size:12px; color:var(--text-sub);">กำลังโหลดรายการผลไม้...</div>
+                <div style="text-align:center; padding:20px; font-size:14px; color:var(--text-sub);">กำลังโหลดรายการผลไม้...</div>
             </div>
 
-            <div id="duo-sauce-section" style="display:none; background:#fdfdfd; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:10px; font-size:12px;">
-                <div style="font-weight:600; color:var(--text-main); margin-bottom:6px;">เลือกน้ำจิ้ม / พริกเกลือ (ฟรี 1 อย่าง):</div>
-                <select id="duo-sauce-select" onchange="updateDuoCalcPrice()" style="width:100%; padding:7px; border:1px solid var(--border); border-radius:var(--radius-sm); font-size:13px; background:#fff; color:var(--text-main);">
+            <div id="duo-sauce-section" style="display:none; background:var(--bg-page); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:10px; font-size:14px;">
+                <div style="font-weight:600; color:var(--text-main); margin-bottom:6px; font-size:14px;">เลือกน้ำจิ้ม / พริกเกลือ (ฟรี 1 อย่าง):</div>
+                <select id="duo-sauce-select" onchange="updateDuoCalcPrice()" style="width:100%; padding:8px; border:1px solid var(--border); border-radius:var(--radius-sm); font-size:14px; background:#fff; color:var(--text-main);">
                     <option value="พริกเกลือนัวร์ (ฟรี)">พริกเกลือนัวร์ (ฟรี)</option>
                     <option value="พริกเกลือกะปิแห้ง (ฟรี)">พริกเกลือกะปิแห้ง (ฟรี)</option>
                     <option value="พริกเกลือลาวแซ่บ (ฟรี)">พริกเกลือลาวแซ่บ (ฟรี)</option>
@@ -211,21 +407,21 @@
                 </select>
             </div>
 
-            <div id="duo-addon-section" style="display:none; background:#fdfdfd; border:1px solid var(--border); border-radius:var(--radius-sm); padding:8px 12px; margin-bottom:12px; font-size:12px;">
-                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-                    <input type="checkbox" id="duo-addon-check" onchange="updateDuoCalcPrice()">
-                    <span>เพิ่มน้ำผึ้งและมูสลี่ (สำหรับอะโวคาโด้) <b style="color:var(--primary);">+15 บาท</b></span>
+            <div id="duo-addon-section" style="display:none; background:var(--bg-page); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:12px; font-size:14px;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:14px;">
+                    <input type="checkbox" id="duo-addon-check" onchange="updateDuoCalcPrice()" style="width:18px; height:18px;">
+                    <span style="font-size:14px;">เพิ่มน้ำผึ้งและมูสลี่ (สำหรับอะโวคาโด้) <b style="color:var(--accent); font-size:14px;">+15 บาท</b></span>
                 </label>
             </div>
 
-            <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-top:1px solid var(--border);">
-                <span style="font-size:13px; color:var(--text-sub);">ราคากล่องดูโอ้:</span>
-                <span id="duo-price-preview" style="font-size:16px; font-weight:700; color:var(--primary);">- บาท</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-top:1px solid var(--border);">
+                <span style="font-size:14px; color:var(--text-sub);">ราคากล่องดูโอ้:</span>
+                <span id="duo-price-preview" style="font-size:18px; font-weight:700; color:var(--primary);">- บาท</span>
             </div>
 
             <div style="display:flex; gap:8px; margin-top:8px;">
                 <button class="btn-close-modal" style="flex:1;" onclick="closeDuoModal()">ยกเลิก</button>
-                <button class="btn-confirm-order" id="btn-confirm-duo" style="flex:2; padding:9px;" onclick="addDuoBoxToCart()" disabled>เพิ่มลงตะกร้า</button>
+                <button class="btn-confirm-order" id="btn-confirm-duo" style="flex:2; padding:10px;" onclick="addDuoBoxToCart()" disabled>เพิ่มลงตะกร้า</button>
             </div>
         </div>
     </div>
@@ -234,24 +430,25 @@
     <div class="modal-overlay" id="sauce-modal">
         <div class="modal-card">
             <div class="modal-title" id="modal-product-name">รายการสินค้า</div>
-            <div class="modal-sub">เลือกตัวเลือกน้ำจิ้มสำหรับ <span id="modal-box-index" style="font-weight:600; color:var(--text-main);">กล่องที่ 1</span></div>
+            <div class="modal-sub">เลือกตัวเลือกน้ำจิ้มสำหรับ <span id="modal-box-index" style="font-weight:600; color:var(--text-main); font-size:14px;">กล่องที่ 1</span></div>
             
             <button class="sauce-btn" onclick="selectSauceOption('ไม่รับน้ำจิ้ม')">ไม่รับน้ำจิ้ม</button>
-            <button class="sauce-btn" onclick="selectSauceOption('พริกเกลือนัวร์ (ฟรี)')">พริกเกลือนัวร์ <span>ฟรี</span></button>
-            <button class="sauce-btn" onclick="selectSauceOption('พริกเกลือกะปิแห้ง (ฟรี)')">พริกเกลือกะปิแห้ง <span>ฟรี</span></button>
-            <button class="sauce-btn" onclick="selectSauceOption('พริกเกลือลาวแซ่บ (ฟรี)')">พริกเกลือลาวแซ่บ <span>ฟรี</span></button>
-            <button class="sauce-btn" onclick="selectSauceOption('น้ำจิ้มบ๊วยเค็ม (ฟรี)')">น้ำจิ้มบ๊วยเค็ม <span>ฟรี</span></button>
-            <button class="sauce-btn" onclick="selectSauceOption('กะปิปลาร้า (+20 บาท)')">กะปิปลาร้า <span style="color:var(--primary);">+20 บาท</span></button>
-            <button class="sauce-btn" onclick="selectSauceOption('กะปิหวาน (+20 บาท)')">กะปิหวาน <span style="color:var(--primary);">+20 บาท</span></button>
+            <button class="sauce-btn" onclick="selectSauceOption('พริกเกลือนัวร์ (ฟรี)')">พริกเกลือนัวร์ <span style="font-size:14px; color:#27ae60;">ฟรี</span></button>
+            <button class="sauce-btn" onclick="selectSauceOption('พริกเกลือกะปิแห้ง (ฟรี)')">พริกเกลือกะปิแห้ง <span style="font-size:14px; color:#27ae60;">ฟรี</span></button>
+            <button class="sauce-btn" onclick="selectSauceOption('พริกเกลือลาวแซ่บ (ฟรี)')">พริกเกลือลาวแซ่บ <span style="font-size:14px; color:#27ae60;">ฟรี</span></button>
+            <button class="sauce-btn" onclick="selectSauceOption('น้ำจิ้มบ๊วยเค็ม (ฟรี)')">น้ำจิ้มบ๊วยเค็ม <span style="font-size:14px; color:#27ae60;">ฟรี</span></button>
+            <button class="sauce-btn" onclick="selectSauceOption('กะปิปลาร้า (+20 บาท)')">กะปิปลาร้า <span style="color:var(--accent); font-size:14px;">+20 บาท</span></button>
+            <button class="sauce-btn" onclick="selectSauceOption('กะปิหวาน (+20 บาท)')">กะปิหวาน <span style="color:var(--accent); font-size:14px;">+20 บาท</span></button>
             
             <button class="btn-close-modal" onclick="closeSauceModal()">ปิดหน้าต่าง</button>
         </div>
     </div>
 
+    <!-- แถบสรุปยอดและปุ่มสั่งซื้อ -->
     <div class="floating-cart-bar">
         <div class="cart-inner">
             <div class="cart-total-info">
-                <span class="cart-item-count">จำนวน <b id="total-qty">0</b> รายการ</span>
+                <span class="cart-item-count">จำนวน <b id="total-qty" style="font-size:14px;">0</b> รายการ</span>
                 <span class="cart-price-sum" id="total-price">0 บาท</span>
             </div>
             <button class="btn-confirm-order" id="btn-submit" onclick="submitOrder()">ยืนยันการสั่งซื้อ</button>
@@ -275,7 +472,6 @@
         let duoUniqueCounter = 0;
         let customerDatabase = {};
 
-        // ฟังก์ชันบังคับจัดรูปแบบ xxx-xxx-xxxx
         function formatPhoneDigits(val) {
             let digits = String(val).replace(/\D/g, '').slice(0, 10);
             if (digits.length > 6) {
@@ -369,7 +565,7 @@
                 renderMenu();
                 preRenderDuoFruitList();
             } catch (e) {
-                document.getElementById('menu-container').innerHTML = '<div style="text-align:center; padding:30px; color:#e74c3c; font-size:13px;">ไม่สามารถโหลดรายการสินค้าได้ กรุณารีเฟรชหน้าจอ</div>';
+                document.getElementById('menu-container').innerHTML = '<div style="text-align:center; padding:30px; color:#e74c3c; font-size:14px;">ไม่สามารถโหลดรายการสินค้าได้ กรุณารีเฟรชหน้าจอ</div>';
             }
         }
 
@@ -425,6 +621,9 @@
             catHeader.innerText = title;
             container.appendChild(catHeader);
 
+            const grid = document.createElement('div');
+            grid.className = 'product-grid';
+
             items.forEach(item => {
                 const cartQty = cart[item.id] || 0;
                 const card = document.createElement('div');
@@ -438,14 +637,15 @@
                 const hasSauce = checkItemHasSauce(item);
 
                 if (!isDip && !isService(item) && hasSauce && cartQty > 0) {
-                    sauceHTML = `<div class="sauce-summary-box"><div style="color:var(--text-sub); font-weight:600; margin-bottom:4px;">ตัวเลือกน้ำจิ้มที่ระบุ:</div>`;
+                    sauceHTML = `<div class="sauce-summary-box"><div style="color:var(--text-sub); font-weight:600; margin-bottom:4px; font-size:14px;">น้ำจิ้มที่ระบุ:</div>`;
                     for (let i = 0; i < cartQty; i++) {
                         if (!cartSauces[item.id]) cartSauces[item.id] = [];
                         if (!cartSauces[item.id][i]) cartSauces[item.id][i] = 'พริกเกลือนัวร์ (ฟรี)';
                         const cur = cartSauces[item.id][i];
+                        const cleanSauceName = cur.replace(' (ฟรี)', '');
                         sauceHTML += `
                             <div class="sauce-item-row">
-                                <span>กล่องที่ ${i+1}: <b>${cur}</b></span>
+                                <span style="font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:110px;">กล่อง ${i+1}: <b>${cleanSauceName}</b></span>
                                 <button class="sauce-change-btn" onclick="openSauceModal('${item.id}', ${i})">เปลี่ยน</button>
                             </div>`;
                     }
@@ -454,10 +654,11 @@
 
                 card.innerHTML = `
                     <div class="product-main">
-                        <div>
+                        <div class="product-info-wrap">
                             <div class="product-title ${!item.available ? 'out-of-stock-text' : ''}">
-                                ${item.name} <span class="product-price">(${priceText})</span>
+                                ${item.name}
                             </div>
+                            <div class="product-price">${priceText}</div>
                             ${item.detail ? `<div class="product-desc">${item.detail}</div>` : ''}
                             <div class="product-stock-tag ${item.available ? 'stock-available' : 'stock-out'}">
                                 ${item.available ? 'พร้อมจำหน่าย' : 'สินค้าหมด'}
@@ -475,8 +676,10 @@
                     </div>
                     ${sauceHTML}
                 `;
-                container.appendChild(card);
+                grid.appendChild(card);
             });
+
+            container.appendChild(grid);
         }
 
         /* ------------------ ดูโอ้ ------------------ */
@@ -659,7 +862,7 @@
                         <div>
                             <div class="duo-cart-title">${item.name}</div>
                             <div class="duo-cart-sub">${item.price} บาท</div>
-                            ${sauceName ? `<div style="font-size:11px; color:var(--text-sub); margin-top:2px;">น้ำจิ้ม: <b>${sauceName}</b></div>` : ''}
+                            ${sauceName ? `<div style="font-size:14px; color:var(--text-sub); margin-top:2px;">น้ำจิ้ม: <b>${sauceName}</b></div>` : ''}
                         </div>
                         <button class="btn-duo-delete" onclick="removeDuoItem('${id}')">ลบ</button>
                     </div>
@@ -810,10 +1013,10 @@
                 contents: {
                     type: "bubble",
                     header: {
-                        type: "box", layout: "vertical", backgroundColor: "#2c3e50", paddingAll: "16px",
+                        type: "box", layout: "vertical", backgroundColor: "#800020", paddingAll: "16px",
                         contents: [
                             { type: "text", text: "ปอกใส่ปาก", weight: "bold", color: "#ffffff", size: "lg", align: "center" },
-                            { type: "text", text: "รายการสั่งซื้อสินค้าออนไลน์", color: "#bdc3c7", size: "xs", align: "center", margin: "xs" }
+                            { type: "text", text: "รายการสั่งซื้อสินค้าออนไลน์", color: "#F3E6D5", size: "xs", align: "center", margin: "xs" }
                         ]
                     },
                     body: {
@@ -827,7 +1030,7 @@
                                 type: "box", layout: "horizontal",
                                 contents: [
                                     { type: "text", text: "รวมค่าสินค้า", size: "md", weight: "bold", color: "#2c3e50" },
-                                    { type: "text", text: `${subtotal} บาท`, size: "lg", weight: "bold", color: "#c0392b", align: "end" }
+                                    { type: "text", text: `${subtotal} บาท`, size: "lg", weight: "bold", color: "#800020", align: "end" }
                                 ]
                             },
                             { type: "text", text: "* ยอดนี้ยังไม่รวมค่าจัดส่ง (เจ้าหน้าที่จะแจ้งสรุปยอดรวมอีกครั้ง)", size: "xxs", color: "#95a5a6", align: "center" }
