@@ -35,7 +35,7 @@
         }
 
         /* ส่วนหัวร้านค้า */
-        .brand-header { text-align: center; padding: 16px 0 24px; }
+        .brand-header { text-align: center; padding: 16px 0 12px; }
         .brand-header h1 {
             font-family: 'Prompt', sans-serif;
             font-size: 32px;
@@ -44,12 +44,29 @@
             letter-spacing: 0.5px;
             line-height: 1.25;
         }
-        .brand-header p {
+
+        /* กรอบข้อความแจ้งเรื่องราคา: ตีกรอบสวยงามและจัดคำไม่ให้ตัดขาดครึ่ง */
+        .market-notice {
+            background: #ffffff;
+            border: 1.5px solid var(--border);
+            border-left: 4px solid var(--primary);
+            border-radius: var(--radius-md);
+            padding: 14px 18px;
+            margin: 16px auto 26px auto;
+            text-align: center;
+            max-width: 840px;
+            box-shadow: 0 2px 8px rgba(128, 0, 32, 0.04);
+        }
+        .notice-line {
+            line-height: 1.8;
+            margin: 2px 0;
+        }
+        /* บังคับตัดบรรทัดเฉพาะช่วงคำ ไม่ฉีกตัวอักษรขาดครึ่งคำ */
+        .text-chunk {
+            display: inline-block;
             font-size: 14px;
             color: var(--text-sub);
-            margin-top: 10px;
-            line-height: 1.7;
-            text-align: center;
+            word-break: keep-all;
         }
 
         .category-title {
@@ -330,13 +347,23 @@
 <body>
 
     <div class="container">
-        <!-- ส่วนหัวร้านค้า: สโลแกน 2 บรรทัดตามที่กำหนด -->
+        <!-- ส่วนหัวร้านค้า -->
         <div class="brand-header">
             <h1>ปอกใส่ปาก</h1>
-            <p>
-                เนื่องจากราคาผลไม้ในตลาดมีการเปลี่ยนแปลงอยู่ตลอด ทางร้านต้องขออนุญาตปรับเปลี่ยนปริมาณ 
-                และราคาสินค้าตามราคาตลาด เพื่อให้สอดคล้องกับต้นทุนค่ะ ทางร้านจะเลือกผลไม้ที่คุณภาพดีที่สุดเพื่อเมนูโปรดทุก ๆ กล่องของลูกค้าค่ะ
-            </p>
+        </div>
+
+        <!-- กล่องกรอบข้อความแจ้งราคาตลาด (จัดคำไม่ตัดขาดครึ่งประโยค) -->
+        <div class="market-notice">
+            <div class="notice-line">
+                <span class="text-chunk">เนื่องจากราคาผลไม้ในตลาดมีการเปลี่ยนแปลงอยู่ตลอด</span>
+                <span class="text-chunk">ทางร้านต้องขออนุญาตปรับเปลี่ยนปริมาณ</span>
+            </div>
+            <div class="notice-line">
+                <span class="text-chunk">และราคาสินค้าตามราคาตลาด</span>
+                <span class="text-chunk">เพื่อให้สอดคล้องกับต้นทุนค่ะ</span>
+                <span class="text-chunk">ทางร้านจะเลือกผลไม้ที่คุณภาพดีที่สุด</span>
+                <span class="text-chunk">เพื่อเมนูโปรดทุก ๆ กล่องของลูกค้าค่ะ</span>
+            </div>
         </div>
 
         <!-- กล่องเมนูดูโอ้ -->
@@ -967,8 +994,8 @@
                 itemContents.push({
                     type: "box", layout: "horizontal",
                     contents: [
-                        { type: "text", text: `${product.name} x${qty}`, size: "sm", color: "#2c3e50", flex: 4, weight: "bold", wrap: true },
-                        { type: "text", text: `${totalItemPrice} บาท`, size: "sm", color: "#2c3e50", align: "end", flex: 2, weight: "bold" }
+                        { type: "text", text: `${product.name} x${qty}`, size: "sm", color: "#332224", flex: 4, weight: "bold", wrap: true },
+                        { type: "text", text: `${totalItemPrice} บาท`, size: "sm", color: "#332224", align: "end", flex: 2, weight: "bold" }
                     ]
                 });
 
@@ -978,7 +1005,7 @@
                     if (validSauces.length > 0) {
                         itemContents.push({
                             type: "box", layout: "baseline",
-                            contents: [{ type: "text", text: `น้ำจิ้ม: ${validSauces.join(', ')}`, size: "xs", color: "#7f8c8d", wrap: true }],
+                            contents: [{ type: "text", text: `น้ำจิ้ม: ${validSauces.join(', ')}`, size: "xs", color: "#7a5f62", wrap: true }],
                             margin: "xs"
                         });
                     }
@@ -1001,11 +1028,11 @@
             }
 
             const customerDetails = [
-                { type: "text", text: `ลูกค้า: คุณ ${name}`, size: "sm", weight: "bold", color: "#2c3e50" },
+                { type: "text", text: `ลูกค้า: คุณ ${name}`, size: "sm", weight: "bold", color: "#332224" },
                 { type: "text", text: `เบอร์โทรศัพท์: ${phone}`, size: "sm", color: "#555555" },
                 { type: "text", text: `สถานที่จัดส่ง: ${address}`, size: "sm", color: "#555555", wrap: true }
             ];
-            if (note) customerDetails.push({ type: "text", text: `หมายเหตุ: ${note}`, size: "sm", color: "#7f8c8d", wrap: true });
+            if (note) customerDetails.push({ type: "text", text: `หมายเหตุ: ${note}`, size: "sm", color: "#7a5f62", wrap: true });
 
             const flexMessage = {
                 type: "flex",
@@ -1029,7 +1056,7 @@
                             {
                                 type: "box", layout: "horizontal",
                                 contents: [
-                                    { type: "text", text: "รวมค่าสินค้า", size: "md", weight: "bold", color: "#2c3e50" },
+                                    { type: "text", text: "รวมค่าสินค้า", size: "md", weight: "bold", color: "#332224" },
                                     { type: "text", text: `${subtotal} บาท`, size: "lg", weight: "bold", color: "#800020", align: "end" }
                                 ]
                             },
