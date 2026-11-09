@@ -34,7 +34,7 @@
             width: 100%;
         }
 
-        /* ส่วนหัวร้านค้า: ปรับขนาดฟอนต์อัตโนมัติเพื่อไม่ให้ดูใหญ่เทอะทะบนมือถือ */
+        /* ส่วนหัวร้านค้า */
         .brand-header { text-align: center; padding: 18px 0 14px; }
         .brand-header h1 {
             font-family: 'Prompt', sans-serif;
@@ -334,7 +334,7 @@
             padding: 8px 12px; border-radius: var(--radius-sm); margin-top: 6px;
         }
 
-        /* ข้อมูลเงื่อนไขการจัดส่งด้านล่างสุด */
+        /* ข้อมูลเงื่อนไขการจัดส่ง */
         .store-policy {
             margin: 28px auto 0 auto;
             padding: 18px 20px;
@@ -355,7 +355,7 @@
         .btn-confirm-order:disabled { background: var(--border); color: var(--text-sub); cursor: not-allowed; }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
-        .modal-card { background: #ffffff; border-radius: var(--radius-md); width: 100%; max-width: 400px; padding: 22px; box-shadow: 0 10px 25px rgba(0,0,0,0.12); }
+        .modal-card { background: #ffffff; border-radius: var(--radius-md); width: 100%; max-width: 420px; padding: 22px; box-shadow: 0 10px 25px rgba(0,0,0,0.12); }
         .modal-title { font-size: 18px; font-weight: 700; color: var(--primary); text-align: center; }
         .modal-sub { font-size: 14px; color: var(--text-sub); text-align: center; margin: 4px 0 16px; }
         .sauce-btn { width: 100%; text-align: left; padding: 11px 14px; margin-bottom: 6px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-page); font-size: 14.5px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--text-main); font-weight: 500; }
@@ -372,13 +372,13 @@
 <body>
 
     <div class="container">
-        <!-- ส่วนหัวร้านค้า: ชื่อร้าน 48px และสโลแกน 36px (ปรับย่อลงอัตโนมัติบนมือถือ) -->
+        <!-- ส่วนหัวร้านค้า -->
         <div class="brand-header">
             <h1>ปอกใส่ปาก</h1>
             <div class="slogan">ปอกใหม่ทุกกล่อง สดชื่นทุกชิ้น อร่อยทุกคำ ด้วยผลไม้สดคัดสรรคุณภาพเพื่อคุณ</div>
         </div>
 
-        <!-- กล่องกรอบข้อความแจ้งราคาตลาด: เงาแดงเข้มซ้าย-ขวา ล็อกกลุ่มคำไม่ให้ฉีกขาดครึ่ง -->
+        <!-- กล่องกรอบข้อความแจ้งราคาตลาด -->
         <div class="market-notice">
             <div class="notice-line">
                 <span class="text-chunk">เนื่องจากราคาผลไม้เปลี่ยนแปลงตลอด</span>
@@ -429,13 +429,34 @@
             </div>
         </div>
 
-        <!-- ข้อความเงื่อนไขการจัดส่งใหม่ -->
+        <!-- ข้อความเงื่อนไขการจัดส่ง -->
         <div class="store-policy">
             ・ร้านออกส่งทุกวัน เป็นรอบ ๆ รบกวนสั่งล่วงหน้าเพื่อให้ทางร้านจัดคิวออกส่งค่ะ<br>
             ・ขั้นต่ำออกส่ง 150฿ ขึ้นไป สั่งครบ 200฿ ส่งฟรี 7 กิโลเมตรค่ะ<br>
             ・สั่งกับทางร้าน แล้วให้แกรบจัดส่งให้ได้ คิดค่าส่งตามจริงในแอปนะคะ<br>
             ・สั่งเยี่ยมไข้ ของขวัญ ของฝาก ร้านจัดส่งให้ได้ค่ะ<br><br>
             ... ขอบคุณลูกค้าทุกท่านที่เลือกมื้อผลไม้ร้านเราค่ะ ...
+        </div>
+    </div>
+
+    <!-- Modal สรุปออเดอร์สำหรับลูกค้า Facebook / Web -->
+    <div class="modal-overlay" id="order-success-modal">
+        <div class="modal-card" style="text-align: center;">
+            <div style="font-size: 38px; margin-bottom: 6px;">🎉</div>
+            <div class="modal-title" style="font-size: 19px; margin-bottom: 4px;">บันทึกออเดอร์เรียบร้อยแล้วค่ะ!</div>
+            <div class="modal-sub" style="font-size: 14px; margin-bottom: 12px; line-height: 1.6;">
+                ระบบได้ส่งแจ้งเตือนไปที่ร้านค้าเรียบร้อยแล้วค่ะ<br>
+                แตะปุ่มด้านล่างเพื่อ <b>ส่งใบสั่งซื้อเข้าแชท Facebook</b> เพื่อคอนเฟิร์มคิวส่งกับแอดมินได้ทันทีเลยนะคะ
+            </div>
+            
+            <div id="order-summary-copy-box" style="background: var(--bg-page); border: 1px dashed var(--border); border-radius: var(--radius-sm); padding: 12px; font-size: 14px; text-align: left; max-height: 160px; overflow-y: auto; margin-bottom: 14px; white-space: pre-wrap; color: var(--text-main); line-height: 1.5;"></div>
+            
+            <button type="button" class="btn-confirm-order" style="width: 100%; padding: 12px; font-size: 15px; margin-bottom: 8px; background: #1877f2;" onclick="copyAndOpenFacebook()">
+                📋 คัดลอก & เปิดแชท Facebook
+            </button>
+            <button type="button" class="btn-close-modal" onclick="closeSuccessModal()">
+                ปิดหน้าต่าง
+            </button>
         </div>
     </div>
 
@@ -499,7 +520,6 @@
         </div>
     </div>
 
-    <!-- แถบสรุปยอดและปุ่มสั่งซื้อ -->
     <div class="floating-cart-bar">
         <div class="cart-inner">
             <div class="cart-total-info">
@@ -520,12 +540,15 @@
         const MENU_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyaPiqWEQhgM7nxSTDj67DU_8TsWVu36aJNLagaQ33OBRKGErUyiA2x3M9YiMF7kuvL/exec'; 
         const ORDER_API_URL = 'https://script.google.com/macros/s/AKfycbw_E7mdky1b9Jle_1YK6-a4SOgbm7nAHYJOtTgS3aNrizeFiOxwywT92BqI8NA7RrEeOA/exec';
         const MY_LIFF_ID = '2011847809-BCDUYMKz';
+        // ใส่ลิงก์แชท Messenger ของเพจร้าน เช่น 'https://m.me/poksai.pak'
+        const FB_PAGE_URL = 'https://m.me/poksaipaak'; 
 
         let menuData = [], itemDictionary = {}, cart = {}, cartSauces = {};
         let activeItemId = '', activeIndex = 0;
         let selectedDuoItems = [];
         let duoUniqueCounter = 0;
         let customerDatabase = {};
+        let currentOrderClipboardText = '';
 
         function formatPhoneDigits(val) {
             let digits = String(val).replace(/\D/g, '').slice(0, 10);
@@ -983,6 +1006,26 @@
             document.getElementById('total-price').innerText = totalPrice + ' บาท';
         }
 
+        /* ฟังก์ชันคัดลอกข้อความและเปิด Facebook Messenger */
+        function copyAndOpenFacebook() {
+            if (navigator.clipboard && currentOrderClipboardText) {
+                navigator.clipboard.writeText(currentOrderClipboardText).then(() => {
+                    alert('คัดลอกรายการสั่งซื้อเรียบร้อยแล้วค่ะ! กำลังเปิดหน้าแชท ให้แตะ "วาง (Paste)" เพื่อส่งให้ร้านนะคะ');
+                    window.open(FB_PAGE_URL, '_blank');
+                }).catch(() => {
+                    window.open(FB_PAGE_URL, '_blank');
+                });
+            } else {
+                window.open(FB_PAGE_URL, '_blank');
+            }
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('order-success-modal').style.display = 'none';
+            cart = {}; cartSauces = {};
+            renderMenu();
+        }
+
         async function submitOrder() {
             if (!Object.keys(cart).length) { alert('กรุณาเลือกรายการสินค้าอย่างน้อย 1 รายการ'); return; }
 
@@ -1011,6 +1054,7 @@
             let subtotal = 0;
             const itemContents = [];
             const cloudItems = [];
+            let clipboardItemsText = '';
 
             for (const [id, qty] of Object.entries(cart)) {
                 const product = itemDictionary[id];
@@ -1028,9 +1072,11 @@
                 });
 
                 const saucesForThisItem = (cartSauces[id] || []).slice(0, qty);
+                let sauceDetailStr = '';
                 if (saucesForThisItem.length > 0) {
                     const validSauces = saucesForThisItem.filter(s => s && !s.includes('ไม่รับ'));
                     if (validSauces.length > 0) {
+                        sauceDetailStr = ' (น้ำจิ้ม: ' + validSauces.join(', ') + ')';
                         itemContents.push({
                             type: "box", layout: "baseline",
                             contents: [{ type: "text", text: `น้ำจิ้ม: ${validSauces.join(', ')}`, size: "xs", color: "#7a5f62", wrap: true }],
@@ -1039,8 +1085,12 @@
                     }
                 }
 
+                clipboardItemsText += `• ${product.name} x${qty}${sauceDetailStr} = ${totalItemPrice} บาท\n`;
                 cloudItems.push({ id: product.id, name: product.name, price: price, qty: qty, sauces: saucesForThisItem });
             }
+
+            const isLineClient = (typeof liff !== 'undefined' && liff.isInClient() && liff.isLoggedIn());
+            const orderChannel = isLineClient ? 'LINE' : 'Web / Facebook';
 
             try {
                 const cloudUrl = `${ORDER_API_URL}?action=createOrder`
@@ -1049,52 +1099,54 @@
                     + `&address=${encodeURIComponent(address)}`
                     + `&note=${encodeURIComponent(note)}`
                     + `&items=${encodeURIComponent(JSON.stringify(cloudItems))}`
-                    + `&total=${encodeURIComponent(subtotal)}`;
+                    + `&total=${encodeURIComponent(subtotal)}`
+                    + `&channel=${encodeURIComponent(orderChannel)}`;
                 await fetch(cloudUrl, { mode: 'no-cors' });
             } catch (err) {
                 console.warn("Cloud save error:", err);
             }
 
-            const customerDetails = [
-                { type: "text", text: `ลูกค้า: คุณ ${name}`, size: "sm", weight: "bold", color: "#332224" },
-                { type: "text", text: `เบอร์โทรศัพท์: ${phone}`, size: "sm", color: "#555555" },
-                { type: "text", text: `สถานที่จัดส่ง: ${address}`, size: "sm", color: "#555555", wrap: true }
-            ];
-            if (note) customerDetails.push({ type: "text", text: `หมายเหตุ: ${note}`, size: "sm", color: "#7a5f62", wrap: true });
+            // ถ้าสั่งในแอป LINE ให้ส่งบิล Flex Message เข้าแชท LINE ตามปกติ
+            if (isLineClient) {
+                const customerDetails = [
+                    { type: "text", text: `ลูกค้า: คุณ ${name}`, size: "sm", weight: "bold", color: "#332224" },
+                    { type: "text", text: `เบอร์โทรศัพท์: ${phone}`, size: "sm", color: "#555555" },
+                    { type: "text", text: `สถานที่จัดส่ง: ${address}`, size: "sm", color: "#555555", wrap: true }
+                ];
+                if (note) customerDetails.push({ type: "text", text: `หมายเหตุ: ${note}`, size: "sm", color: "#7a5f62", wrap: true });
 
-            const flexMessage = {
-                type: "flex",
-                altText: `คำสั่งซื้อสินค้า: คุณ ${name} (${subtotal} บาท)`,
-                contents: {
-                    type: "bubble",
-                    header: {
-                        type: "box", layout: "vertical", backgroundColor: "#800020", paddingAll: "16px",
-                        contents: [
-                            { type: "text", text: "ปอกใส่ปาก", weight: "bold", color: "#ffffff", size: "lg", align: "center" },
-                            { type: "text", text: "รายการสั่งซื้อสินค้าออนไลน์", color: "#F3E6D5", size: "xs", align: "center", margin: "xs" }
-                        ]
-                    },
-                    body: {
-                        type: "box", layout: "vertical", spacing: "md",
-                        contents: [
-                            { type: "box", layout: "vertical", spacing: "xs", contents: customerDetails },
-                            { type: "separator" },
-                            { type: "box", layout: "vertical", spacing: "sm", contents: itemContents },
-                            { type: "separator" },
-                            {
-                                type: "box", layout: "horizontal",
-                                contents: [
-                                    { type: "text", text: "รวมค่าสินค้า", size: "md", weight: "bold", color: "#332224" },
-                                    { type: "text", text: `${subtotal} บาท`, size: "lg", weight: "bold", color: "#800020", align: "end" }
-                                ]
-                            },
-                            { type: "text", text: "* ยอดนี้ยังไม่รวมค่าจัดส่ง (เจ้าหน้าที่จะแจ้งสรุปยอดรวมอีกครั้ง)", size: "xxs", color: "#95a5a6", align: "center" }
-                        ]
+                const flexMessage = {
+                    type: "flex",
+                    altText: `คำสั่งซื้อสินค้า: คุณ ${name} (${subtotal} บาท)`,
+                    contents: {
+                        type: "bubble",
+                        header: {
+                            type: "box", layout: "vertical", backgroundColor: "#800020", paddingAll: "16px",
+                            contents: [
+                                { type: "text", text: "ปอกใส่ปาก", weight: "bold", color: "#ffffff", size: "lg", align: "center" },
+                                { type: "text", text: "รายการสั่งซื้อสินค้าออนไลน์", color: "#F3E6D5", size: "xs", align: "center", margin: "xs" }
+                            ]
+                        },
+                        body: {
+                            type: "box", layout: "vertical", spacing: "md",
+                            contents: [
+                                { type: "box", layout: "vertical", spacing: "xs", contents: customerDetails },
+                                { type: "separator" },
+                                { type: "box", layout: "vertical", spacing: "sm", contents: itemContents },
+                                { type: "separator" },
+                                {
+                                    type: "box", layout: "horizontal",
+                                    contents: [
+                                        { type: "text", text: "รวมค่าสินค้า", size: "md", weight: "bold", color: "#332224" },
+                                        { type: "text", text: `${subtotal} บาท`, size: "lg", weight: "bold", color: "#800020", align: "end" }
+                                    ]
+                                },
+                                { type: "text", text: "* ยอดนี้ยังไม่รวมค่าจัดส่ง (เจ้าหน้าที่จะแจ้งสรุปยอดรวมอีกครั้ง)", size: "xxs", color: "#95a5a6", align: "center" }
+                            ]
+                        }
                     }
-                }
-            };
+                };
 
-            if (typeof liff !== 'undefined' && liff.isInClient() && liff.isLoggedIn()) {
                 try {
                     await liff.sendMessages([flexMessage]);
                     loadingOverlay.style.display = 'none';
@@ -1106,8 +1158,23 @@
                 }
             }
 
+            // ถ้าสั่งจากเว็บภายนอกหรือ Facebook: แสดงหน้าต่างพร้อมปุ่มคัดลอกเปิดแชท Facebook ทันที
             loadingOverlay.style.display = 'none';
-            alert('ระบบบันทึกรายการสั่งซื้อเรียบร้อยแล้ว แอดมินจะติดต่อยืนยันออเดอร์ในแชทสักครู่นะคะ');
+
+            currentOrderClipboardText = `🍉 ใบสั่งซื้อร้าน ปอกใส่ปาก\n`
+                + `--------------------\n`
+                + `ลูกค้า: คุณ ${name}\n`
+                + `เบอร์โทรศัพท์: ${phone}\n`
+                + `สถานที่จัดส่ง: ${address}\n`
+                + (note ? `หมายเหตุ: ${note}\n` : '')
+                + `--------------------\n`
+                + `รายการสินค้า:\n${clipboardItemsText}`
+                + `--------------------\n`
+                + `รวมค่าสินค้า: ${subtotal} บาท\n`
+                + `(รอร้านค้าตรวจสอบรอบส่งและยืนยันยอดรวมนะคะ)`;
+
+            document.getElementById('order-summary-copy-box').innerText = currentOrderClipboardText;
+            document.getElementById('order-success-modal').style.display = 'flex';
         }
 
         initLiff();
