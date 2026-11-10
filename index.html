@@ -25,20 +25,17 @@
         body { background-color: var(--c-bg); color: var(--c-text); line-height: 1.6; padding-bottom: 120px; font-size: 15px; }
         .container { max-width: 1100px; margin: 0 auto; padding: 20px 16px; width: 100%; }
 
-        /* ส่วนหัวร้านค้าและโลโก้ */
         .brand-header { text-align: center; padding: 10px 0 16px; }
         .brand-logo {
-            width: 150px;
-            height: 150px;
+            width: 84px;
+            height: 84px;
             object-fit: contain;
             display: block;
             margin: 0 auto 8px auto;
             filter: drop-shadow(0 4px 10px rgba(222, 114, 114, 0.22));
             transition: transform 0.2s ease;
         }
-        .brand-logo:hover {
-            transform: scale(1.05);
-        }
+        .brand-logo:hover { transform: scale(1.05); }
         .brand-header h1 { font-family: 'Prompt', sans-serif; font-size: 42px; font-weight: 700; color: var(--c-primary); line-height: 1.2; }
         .brand-header .slogan { font-family: 'Prompt', sans-serif; font-size: 20px; font-weight: 500; color: var(--c-text); margin-top: 6px; }
 
@@ -49,7 +46,6 @@
         }
         .notice-line { line-height: 1.7; font-size: 14px; color: var(--c-sub); }
 
-        /* แถบหมวดหมู่: จัดกึ่งกลาง ขึ้นบรรทัดใหม่อัตโนมัติ ไม่ตกขอบ */
         .category-filter-wrap {
             display: flex;
             flex-wrap: wrap;
@@ -204,7 +200,6 @@
             padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.15);
         }
         .modal-title { font-size: 17px; font-weight: 700; color: var(--c-primary); text-align: center; font-family: 'Prompt', sans-serif; }
-        .modal-sub { font-size: 13.5px; color: var(--c-sub); text-align: center; margin: 4px 0 14px; }
         .sauce-btn {
             width: 100%; text-align: left; padding: 10px 12px; margin-bottom: 6px;
             border-radius: var(--radius-sm); border: 1px solid var(--c-border);
@@ -227,7 +222,6 @@
 <body>
 
     <div class="container">
-        <!-- Header พร้อมโลโก้ -->
         <div class="brand-header">
             <img src="logo.png" alt="โลโก้ ปอกใส่ปาก" class="brand-logo">
             <h1>ปอกใส่ปาก</h1>
@@ -239,7 +233,6 @@
             <div class="notice-line">เพื่อให้ได้ผลไม้คุณภาพดีที่สุดสำหรับคุณลูกค้าทุกท่านค่ะ</div>
         </div>
 
-        <!-- แถบหมวดหมู่ 7 หมวดหลัก + ดูโอ้ (จัดกึ่งกลาง ขึ้นบรรทัดใหม่อัตโนมัติ ไม่ตกขอบ) -->
         <div class="category-filter-wrap" id="category-filter-bar">
             <div class="filter-pill active" onclick="setCategoryFilter('all', this)">ทั้งหมด</div>
             <div class="filter-pill" onclick="setCategoryFilter('เมนูแนะนำตามฤดูกาล', this)">เมนูแนะนำตามฤดูกาล</div>
@@ -252,7 +245,6 @@
             <div class="filter-pill" onclick="setCategoryFilter('บริการเสริมอื่น ๆ', this)">บริการเสริมอื่น ๆ</div>
         </div>
 
-        <!-- กล่องผลไม้ดูโอ้ -->
         <div id="duo-section-wrap">
             <div class="category-title">กล่องผลไม้ดูโอ้</div>
             <div class="duo-banner-card">
@@ -299,12 +291,16 @@
         </div>
     </div>
 
-    <!-- Modal FB Messenger -->
+    <!-- Modal แจ้งเตือนสั่งซื้อสำเร็จ -->
     <div class="modal-overlay" id="order-success-modal">
         <div class="modal-card" style="text-align: center;">
             <div style="font-size: 34px; margin-bottom: 6px;">✨</div>
             <div class="modal-title">บันทึกออเดอร์เรียบร้อยแล้วค่ะ!</div>
-            <div class="modal-sub">ระบบแจ้งเตือนเข้าหน้าร้านแล้ว แตะปุ่มด้านล่างเพื่อเปิดแชท Facebook ส่งรายการให้แอดมินยืนยันยอดได้ทันทีค่ะ</div>
+            <div style="line-height: 1.6; margin: 8px 0 14px; font-size: 13.5px;">
+                <span style="color: var(--c-primary); font-weight: 700; font-size: 14.5px;">** ยังไม่รวมค่าจัดส่ง **</span><br>
+                <b>รบกวนรอทางร้านยืนยันคำสั่งซื้อค่ะ</b><br>
+                <span style="color: var(--c-sub); font-size: 12.5px;">แตะปุ่มด้านล่างเพื่อเปิดแชท Facebook ส่งรายการให้แอดมินยืนยันยอดได้ทันทีค่ะ</span>
+            </div>
             <div id="order-clipboard-box" style="background:#fffdf7; border:1px dashed var(--c-border); border-radius:6px; padding:10px; font-size:13px; text-align:left; max-height:150px; overflow-y:auto; margin-bottom:12px; white-space:pre-wrap;"></div>
             <button class="btn-confirm-order" style="width:100%; margin-bottom:8px; background:#1877f2;" onclick="copyAndOpenFacebook()">📋 คัดลอก & เปิดแชท Facebook</button>
             <button class="btn-modal-close" onclick="closeSuccessModal()">ปิดหน้าต่าง</button>
@@ -377,7 +373,7 @@
 
     <script>
         const MENU_API_URL = 'https://script.google.com/macros/s/AKfycbyaPiqWEQhgM7nxSTDj67DU_8TsWVu36aJNLagaQ33OBRKGErUyiA2x3M9YiMF7kuvL/exec';
-        const ORDER_API_URL = 'https://script.google.com/macros/s/AKfycbw_E7mdky1b9Jle_1YK6-a4SOgbm7nAHYJOtTgS3aNrizeFiOxwywT92BqI8NA7RrEeOA/exec';
+        const ORDER_API_URL = 'https://script.google.com/macros/s/AKfycbyQYkZ_hTjm6OWusr74xDWF3IOuH4LBxSS2bTDyWfOMpslYC1Rcd0UHYDvCQBoS0RTj/exec';
         const MY_LIFF_ID = '2011847809-BCDUYMKz';
         const FB_PAGE_URL = 'https://m.me/poksai.pak';
 
@@ -821,7 +817,8 @@
                               + `${itemsText}`
                               + `--------------------\n`
                               + `ยอดรวมค่าสินค้า: ${total} บาท\n`
-                              + `(รอร้านค้ายืนยันรอบจัดส่งอีกครั้งนะคะ)`;
+                              + `** ยังไม่รวมค่าจัดส่ง **\n`
+                              + `รบกวนรอทางร้านยืนยันคำสั่งซื้อค่ะ`;
                 try {
                     await liff.sendMessages([{ type: 'text', text: lineMsg }]);
                     alert('ส่งรายการสั่งซื้อเรียบร้อยแล้ว');
@@ -838,7 +835,9 @@
                           + `--------------------\n`
                           + `${itemsText}`
                           + `--------------------\n`
-                          + `ยอดรวม: ${total} บาท`;
+                          + `ยอดรวมค่าสินค้า: ${total} บาท\n`
+                          + `** ยังไม่รวมค่าจัดส่ง **\n`
+                          + `รบกวนรอทางร้านยืนยันคำสั่งซื้อค่ะ`;
 
             document.getElementById('order-clipboard-box').innerText = clipboardText;
             document.getElementById('order-success-modal').style.display = 'flex';
