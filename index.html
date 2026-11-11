@@ -200,6 +200,8 @@
             padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.15);
         }
         .modal-title { font-size: 17px; font-weight: 700; color: var(--c-primary); text-align: center; font-family: 'Prompt', sans-serif; }
+        .modal-sub { font-size: 13px; color: var(--c-sub); text-align: center; margin: 4px 0 10px; }
+        .btn-confirm-order:disabled { opacity: 0.6; cursor: not-allowed; }
         .sauce-btn {
             width: 100%; text-align: left; padding: 10px 12px; margin-bottom: 6px;
             border-radius: var(--radius-sm); border: 1px solid var(--c-border);
@@ -295,7 +297,8 @@
     <div class="modal-overlay" id="order-success-modal">
         <div class="modal-card" style="text-align: center;">
             <div style="font-size: 34px; margin-bottom: 6px;">✨</div>
-            <div class="modal-title">บันทึกออเดอร์เรียบร้อยแล้วค่ะ!</div>
+            <div class="modal-title" id="order-success-title">บันทึกออเดอร์เรียบร้อยแล้วค่ะ!</div>
+            <div id="order-cloud-warning" style="display:none; background:#fff3f0; border:1px solid #e8b4ab; color:#b3422f; border-radius:6px; padding:8px 10px; margin-top:8px; font-size:13px; line-height:1.5;"></div>
             <div style="line-height: 1.6; margin: 8px 0 14px; font-size: 13.5px;">
                 <span style="color: var(--c-primary); font-weight: 700; font-size: 14.5px;">** ยังไม่รวมค่าจัดส่ง **</span><br>
                 <b>รบกวนรอทางร้านยืนยันคำสั่งซื้อค่ะ</b><br>
@@ -367,7 +370,7 @@
                 <div style="font-size:13px; color:var(--c-sub);">รวม <b id="total-qty" style="color:var(--c-text);">0</b> รายการ</div>
                 <div class="cart-price-sum" id="total-price">0 บาท</div>
             </div>
-            <button class="btn-confirm-order" onclick="submitOrder()">ยืนยันการสั่งซื้อ</button>
+            <button class="btn-confirm-order" id="btn-submit-order" onclick="submitOrder()">ยืนยันการสั่งซื้อ</button>
         </div>
     </div>
 
@@ -392,6 +395,61 @@
         let selectedDuo = [], duoCounter = 0;
         let customerDB = {}, currentFilter = 'all';
         let clipboardText = '';
+        let isSubmitting = false, lookupTimer = null, lookupSeq = 0;
+        const DEFAULT_SAUCE = 'พริกเกลือนัวร์ (ฟรี)';
+        const PREMIUM_CATEGORY = 'ผลไม้นำเข้าพรีเมี่ยม';
+
+        function esc(v) {
+            return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+        // id ที่จะใส่ใน onclick="..." ต้องปลอดภัยทั้ง HTML และ JS string
+        function enc(v) {
+            return encodeURIComponent(String(v == null ? '' : v)).replace(/'/g, '%27');
+        }
+        function toBool(v) {
+            if (v === true || v === 1) return true;
+            const t = String(v == null ? '' : v).trim().toLowerCase();
+            return t === 'true' || t === '1' || t === 'yes' || t === 'in stock' || t === 'instock';
+        }
+        // รองรับทั้งรูปแบบดิบจากชีท ("in stock"/"TRUE") และรูปแบบที่ backend แปลงแล้ว (true/false)
+        function normalizeMenuItem(i) {
+            return Object.assign({}, i, {
+                id: String(i.id == null ? '' : i.id).trim(),
+                name: String(i.name == null ? '' : i.name).trim(),
+                price: Number(i.price) || 0,
+                category: String(i.category == null ? '' : i.category).trim(),
+                available: toBool(i.available),
+                hasSauce: toBool(i.hasSauce)
+            });
+        }
+        function sauceExtra(sauce) {
+            return String(sauce || '').includes('+20') ? 20 : 0;
+        }
+        function getSauces(id, q) {
+            const out = [];
+            for (let i = 0; i < q; i++) out.push((cartSauces[id] && cartSauces[id][i]) || DEFAULT_SAUCE);
+            return out;
+        }
+        // แปลงตะกร้าเป็นบรรทัดสั่งซื้อเหมือนที่ POS ทำ: น้ำจิ้มเสียเงินบวกเข้าราคาบรรทัด และแยกบรรทัดตามน้ำจิ้ม
+        function buildCartLines() {
+            const lines = [];
+            for (const [id, q] of Object.entries(cart)) {
+                const it = itemDict[id];
+                if (!it || !(q > 0)) continue;
+                if (it.isDuo) {
+                    lines.push({ id: it.id, name: it.name, price: it.price, qty: q, sauces: (cartSauces[id] || []).slice(0, 1) });
+                } else if (it.hasSauce) {
+                    const groups = new Map();
+                    getSauces(id, q).forEach(sv => groups.set(sv, (groups.get(sv) || 0) + 1));
+                    groups.forEach((n, sv) => {
+                        lines.push({ id: it.id, name: it.name, price: it.price + sauceExtra(sv), qty: n, sauces: sv.includes('ไม่รับ') ? [] : [sv] });
+                    });
+                } else {
+                    lines.push({ id: it.id, name: it.name, price: it.price, qty: q, sauces: [] });
+                }
+            }
+            return lines;
+        }
 
         function formatPhone(v) {
             const d = String(v).replace(/\D/g, '').slice(0, 10);
@@ -400,20 +458,40 @@
             return d;
         }
 
+        function applyCustomer(c, digits) {
+            const badge = document.getElementById('cust-suggest-badge');
+            if (!c) { badge.style.display = 'none'; return; }
+            const nameEl = document.getElementById('cust-name');
+            const addrEl = document.getElementById('cust-address');
+            if (c.name && !nameEl.value) nameEl.value = c.name;
+            if (c.address && !addrEl.value) addrEl.value = c.address;
+            badge.innerText = `✓ พบข้อมูลเดิม: คุณ ${c.name || 'ลูกค้าประจำ'} (ดึงที่อยู่ให้อัตโนมัติ)`;
+            badge.style.display = 'block';
+        }
+
+        // ค้นหาลูกค้าทีละเบอร์ (ไม่โหลดรายชื่อลูกค้าทั้งหมดลงเครื่องผู้ใช้)
+        async function lookupCustomerByPhone(digits) {
+            const seq = ++lookupSeq;
+            try {
+                const res = await fetch(`${ORDER_API_URL}?action=lookupCustomer&phone=${encodeURIComponent(digits)}&t=${Date.now()}`);
+                const r = await res.json();
+                const found = r && r.found ? { name: r.name || '', address: r.address || '' } : null;
+                customerDB[digits] = found;
+                if (seq !== lookupSeq) return;
+                if (document.getElementById('cust-phone').value.replace(/\D/g, '') !== digits) return;
+                applyCustomer(found, digits);
+            } catch (e) {}
+        }
+
         function handlePhoneInput(el) {
             el.value = formatPhone(el.value);
             const digits = el.value.replace(/\D/g, '');
             const badge = document.getElementById('cust-suggest-badge');
+            clearTimeout(lookupTimer);
 
-            if (digits.length >= 9 && customerDB[digits]) {
-                const c = customerDB[digits];
-                if (c.name && !document.getElementById('cust-name').value) document.getElementById('cust-name').value = c.name;
-                if (c.address) document.getElementById('cust-address').value = c.address;
-                badge.innerText = `✓ พบข้อมูลเดิม: คุณ ${c.name || 'ลูกค้าประจำ'} (ดึงที่อยู่ให้อัตโนมัติ)`;
-                badge.style.display = 'block';
-            } else {
-                badge.style.display = 'none';
-            }
+            if (digits.length < 9) { badge.style.display = 'none'; return; }
+            if (Object.prototype.hasOwnProperty.call(customerDB, digits)) { applyCustomer(customerDB[digits], digits); return; }
+            lookupTimer = setTimeout(() => lookupCustomerByPhone(digits), 450);
         }
 
         async function initApp() {
@@ -422,30 +500,19 @@
                 const p = localStorage.getItem('poksai_phone');
                 const a = localStorage.getItem('poksai_addr');
                 if (n) document.getElementById('cust-name').value = n;
-                if (p) { document.getElementById('cust-phone').value = formatPhone(p); handlePhoneInput(document.getElementById('cust-phone')); }
                 if (a) document.getElementById('cust-address').value = a;
+                if (p) { document.getElementById('cust-phone').value = formatPhone(p); handlePhoneInput(document.getElementById('cust-phone')); }
             } catch(e) {}
 
-            try {
-                const res = await fetch(`${ORDER_API_URL}?action=getCustomers&t=${Date.now()}`);
-                const r = await res.json();
-                if (r.status === 'success' && Array.isArray(r.data)) {
-                    r.data.forEach(c => {
-                        const d = String(c.rawPhone || c.phone || '').replace(/\D/g, '');
-                        if (d) customerDB[d] = { name: c.name, address: c.address };
-                    });
-                }
-            } catch(e) {}
+            loadMenu();
 
             try {
                 await liff.init({ liffId: MY_LIFF_ID });
                 if (liff.isLoggedIn() && !document.getElementById('cust-name').value) {
                     const prof = await liff.getProfile();
-                    if (prof?.displayName) document.getElementById('cust-name').value = prof.displayName;
+                    if (prof?.displayName && !document.getElementById('cust-name').value) document.getElementById('cust-name').value = prof.displayName;
                 }
             } catch(e) {}
-
-            loadMenu();
         }
 
         async function loadMenu() {
@@ -454,14 +521,40 @@
                 const data = await res.json();
                 if (!Array.isArray(data) || data.length === 0) throw new Error('Data empty');
 
-                menuData = data.filter(i => String(i.category || '').trim() !== 'งดจำหน่าย');
+                menuData = data.map(normalizeMenuItem).filter(i => i.id && i.name && i.category !== 'งดจำหน่าย');
                 menuData.forEach(i => { itemDict[i.id] = i; });
 
+                buildExtraPills();
                 renderMenu();
                 setupDuoList();
             } catch(e) {
                 document.getElementById('menu-container').innerHTML = '<div style="text-align:center; padding:30px; color:#c45858;">ไม่สามารถโหลดรายการสินค้าได้ กรุณารีเฟรชใหม่อีกครั้งค่ะ</div>';
             }
+        }
+
+        // หมวดที่เพิ่มใหม่ในชีทแต่ยังไม่อยู่ใน CATEGORIES จะต้องไม่หายไปจากหน้าเมนู
+        function getExtraCategories() {
+            const extra = [];
+            menuData.forEach(i => {
+                if (!i.category) return;
+                if (CATEGORIES.some(c => isCategoryMatch(i.category, c))) return;
+                if (!extra.includes(i.category)) extra.push(i.category);
+            });
+            return extra;
+        }
+
+        function buildExtraPills() {
+            const bar = document.getElementById('category-filter-bar');
+            bar.querySelectorAll('[data-extra="1"]').forEach(n => n.remove());
+            getExtraCategories().forEach(cat => {
+                const pill = document.createElement('div');
+                pill.className = 'filter-pill';
+                pill.dataset.extra = '1';
+                pill.dataset.cat = cat;
+                pill.innerText = cat;
+                pill.onclick = () => setCategoryFilter(cat, pill);
+                bar.appendChild(pill);
+            });
         }
 
         function isCategoryMatch(itemCat, targetCat) {
@@ -488,7 +581,7 @@
             if (currentFilter === 'duo') { renderDuoCart(); updateCartBar(); return; }
 
             let renderedCount = 0;
-            CATEGORIES.forEach(cat => {
+            CATEGORIES.concat(getExtraCategories()).forEach(cat => {
                 if (currentFilter !== 'all' && currentFilter !== cat) return;
 
                 const items = menuData.filter(i => isCategoryMatch(i.category, cat));
@@ -521,18 +614,20 @@
                 const isAvail = item.available === true;
                 const card = document.createElement('div');
                 card.className = `product-card ${!isAvail ? 'disabled' : ''}`;
+                const idArg = `decodeURIComponent('${enc(item.id)}')`;
 
                 let sauceBox = '';
                 if (item.hasSauce && qty > 0) {
                     sauceBox = `<div class="sauce-summary-box"><div style="font-weight:600; margin-bottom:2px;">น้ำจิ้ม:</div>`;
                     for (let i = 0; i < qty; i++) {
                         if (!cartSauces[item.id]) cartSauces[item.id] = [];
-                        if (!cartSauces[item.id][i]) cartSauces[item.id][i] = 'พริกเกลือนัวร์ (ฟรี)';
-                        const sName = cartSauces[item.id][i].replace(' (ฟรี)', '');
+                        if (!cartSauces[item.id][i]) cartSauces[item.id][i] = DEFAULT_SAUCE;
+                        const sv = cartSauces[item.id][i];
+                        const sName = sv.replace(' (ฟรี)', '');
                         sauceBox += `
                             <div class="sauce-item-row">
-                                <span>กล่อง ${i+1}: <b>${sName}</b></span>
-                                <button class="sauce-change-btn" onclick="openSauceModal('${item.id}', ${i})">เปลี่ยน</button>
+                                <span>กล่อง ${i+1}: <b>${esc(sName)}</b></span>
+                                <button class="sauce-change-btn" onclick="openSauceModal(${idArg}, ${i})">เปลี่ยน</button>
                             </div>`;
                     }
                     sauceBox += `</div>`;
@@ -540,18 +635,18 @@
 
                 card.innerHTML = `
                     <div>
-                        <div class="product-title">${item.name}</div>
-                        <div class="product-price">${item.price > 0 ? item.price + ' บาท' : 'ฟรี'}</div>
-                        ${item.detail ? `<div class="product-desc">${item.detail}</div>` : ''}
+                        <div class="product-title">${esc(item.name)}</div>
+                        <div class="product-price">${item.price > 0 ? esc(item.price) + ' บาท' : 'ฟรี'}</div>
+                        ${item.detail ? `<div class="product-desc">${esc(item.detail)}</div>` : ''}
                         <div class="stock-tag ${isAvail ? 'in' : 'out'}">${isAvail ? 'พร้อมจำหน่าย' : 'สินค้าหมด'}</div>
                     </div>
                     <div>
                         <div class="qty-controls">
                             ${qty > 0 ? `
-                                <button class="qty-btn" onclick="minusItem('${item.id}')">-</button>
+                                <button class="qty-btn" onclick="minusItem(${idArg})">-</button>
                                 <span class="qty-number">${qty}</span>
                             ` : ''}
-                            <button class="btn-select-init" onclick="addItem('${item.id}')" ${!isAvail ? 'disabled' : ''}>
+                            <button class="btn-select-init" onclick="addItem(${idArg})" ${!isAvail ? 'disabled' : ''}>
                                 ${qty > 0 ? '+ เพิ่ม' : 'เลือก'}
                             </button>
                         </div>
@@ -566,6 +661,7 @@
 
         function addItem(id) {
             const it = itemDict[id];
+            if (!it || !it.available) return;
             if (it.hasSauce) {
                 openSauceModal(id, cart[id] || 0);
             } else {
@@ -601,18 +697,21 @@
         function setupDuoList() {
             const box = document.getElementById('duo-fruit-list');
             box.innerHTML = '';
-            const eligible = menuData.filter(i => 
-                i.available && 
-                i.category !== 'พริกเกลือและน้ำจิ้ม' && 
-                !String(i.category || '').includes('บริการเสริม')
+            // กติกาเดียวกับ POS: ไม่รวมน้ำจิ้ม บริการเสริม และเมนูยำ
+            const eligible = menuData.filter(i =>
+                i.available &&
+                i.category !== 'พริกเกลือและน้ำจิ้ม' &&
+                !String(i.category || '').includes('บริการเสริม') &&
+                !String(i.name || '').includes('ยำ')
             );
             eligible.forEach(it => {
                 const row = document.createElement('div');
                 row.className = 'duo-fruit-row';
-                row.innerHTML = `<span>${it.name}</span><input type="checkbox" id="duo-cb-${it.id}" onchange="checkDuo('${it.id}', this)">`;
+                row.innerHTML = `<span>${esc(it.name)}</span><input type="checkbox" id="duo-cb-${esc(it.id)}">`;
+                const cb = row.querySelector('input');
+                cb.onchange = () => checkDuo(it.id, cb);
                 row.onclick = (e) => {
                     if (e.target.tagName !== 'INPUT') {
-                        const cb = document.getElementById(`duo-cb-${it.id}`);
                         cb.checked = !cb.checked;
                         checkDuo(it.id, cb);
                     }
@@ -625,6 +724,7 @@
             selectedDuo = [];
             document.querySelectorAll('#duo-fruit-list input').forEach(c => c.checked = false);
             document.getElementById('duo-addon-check').checked = false;
+            document.getElementById('duo-sauce-select').selectedIndex = 0;
             document.getElementById('duo-sauce-sec').style.display = 'none';
             document.getElementById('duo-addon-sec').style.display = 'none';
             calcDuoPrice();
@@ -647,8 +747,22 @@
 
             const hasSauce = selectedDuo.some(i => i.hasSauce);
             document.getElementById('duo-sauce-sec').style.display = hasSauce ? 'block' : 'none';
+            if (!hasSauce) document.getElementById('duo-sauce-select').selectedIndex = 0;
 
             calcDuoPrice();
+        }
+
+        // ราคากล่องดูโอ้ (ใช้ร่วมกันทั้งตอนแสดงตัวอย่างและตอนใส่ตะกร้า)
+        function duoPrice() {
+            let p = 70;
+            const premCount = selectedDuo.filter(i => i.category === PREMIUM_CATEGORY).length;
+            if (premCount === 2) p = 120;
+            else if (premCount === 1) p = 95;
+            else if (selectedDuo[0].price > 60 || selectedDuo[1].price > 60) p = 85;
+
+            if (document.getElementById('duo-addon-check').checked) p += 15;
+            if (selectedDuo.some(i => i.hasSauce)) p += sauceExtra(document.getElementById('duo-sauce-select').value);
+            return p;
         }
 
         function calcDuoPrice() {
@@ -657,17 +771,7 @@
             const preview = document.getElementById('duo-price-preview');
 
             if (selectedDuo.length === 2) {
-                let p = 70;
-                const premCount = selectedDuo.filter(i => i.category === 'ผลไม้นำเข้าพรีเมี่ยม').length;
-                if (premCount === 2) p = 120;
-                else if (premCount === 1) p = 95;
-                else if (selectedDuo[0].price > 60 || selectedDuo[1].price > 60) p = 85;
-
-                if (document.getElementById('duo-addon-check').checked) p += 15;
-                const s = document.getElementById('duo-sauce-select');
-                if (s && s.value.includes('+20')) p += 20;
-
-                preview.innerText = `${p} บาท`;
+                preview.innerText = `${duoPrice()} บาท`;
                 btn.disabled = false;
             } else {
                 preview.innerText = `เลือกอีก ${2 - selectedDuo.length} อย่าง`;
@@ -677,17 +781,10 @@
 
         function addDuoToCart() {
             if (selectedDuo.length !== 2) return;
-            let p = 70;
-            const premCount = selectedDuo.filter(i => i.category === 'ผลไม้นำเข้าพรีเมี่ยม').length;
-            if (premCount === 2) p = 120;
-            else if (premCount === 1) p = 95;
-            else if (selectedDuo[0].price > 60 || selectedDuo[1].price > 60) p = 85;
-
+            const p = duoPrice();
             const withAddon = document.getElementById('duo-addon-check').checked;
-            if (withAddon) p += 15;
-
-            const sauceVal = document.getElementById('duo-sauce-select').value;
-            if (sauceVal.includes('+20')) p += 20;
+            const hasSauce = selectedDuo.some(i => i.hasSauce);
+            const sauceVal = hasSauce ? document.getElementById('duo-sauce-select').value : '';
 
             const duoId = 'DUO_' + (++duoCounter);
             const title = `ผลไม้ดูโอ้ (${selectedDuo[0].name} + ${selectedDuo[1].name}${withAddon ? ' +น้ำผึ้งมูสลี่' : ''})`;
@@ -709,13 +806,14 @@
             let html = '';
             keys.forEach(k => {
                 const it = itemDict[k];
+                if (!it) return;
                 const s = cartSauces[k] ? cartSauces[k][0] : '';
                 html += `
                     <div class="duo-cart-item">
                         <div>
-                            <div class="duo-cart-title">${it.name}</div>
-                            <div class="duo-cart-sub">${it.price} บาท</div>
-                            ${s ? `<div style="font-size:12px; color:var(--c-sub);">น้ำจิ้ม: <b>${s}</b></div>` : ''}
+                            <div class="duo-cart-title">${esc(it.name)}</div>
+                            <div class="duo-cart-sub">${esc(it.price)} บาท</div>
+                            ${s ? `<div style="font-size:12px; color:var(--c-sub);">น้ำจิ้ม: <b>${esc(s)}</b></div>` : ''}
                         </div>
                         <button class="btn-duo-delete" onclick="deleteDuo('${k}')">ลบ</button>
                     </div>`;
@@ -730,11 +828,8 @@
 
         function updateCartBar() {
             let qty = 0, sum = 0;
-            for (const [id, q] of Object.entries(cart)) {
-                const it = itemDict[id];
-                if (!it) continue;
-                qty += q; sum += it.price * q;
-            }
+            for (const q of Object.values(cart)) qty += q;
+            buildCartLines().forEach(l => { sum += l.price * l.qty; });
             document.getElementById('total-qty').innerText = qty;
             document.getElementById('total-price').innerText = sum + ' บาท';
         }
@@ -754,7 +849,43 @@
             cart = {}; cartSauces = {}; renderMenu();
         }
 
+        // ส่งเข้าชีทแบบ POST (text/plain ไม่มี preflight) แล้วอ่านผลจริง
+        // ไม่ส่งซ้ำด้วยวิธีอื่น เพราะฝั่งเซิร์ฟเวอร์ออกเลขออเดอร์ใหม่ทุกครั้ง จะเกิดออเดอร์ซ้ำ
+        async function sendOrderToCloud(order) {
+            try {
+                const res = await fetch(ORDER_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'createOrder', order: order })
+                });
+                const r = await res.json();
+                if (r && r.ok === true && r.orderId) return { ok: true, orderId: r.orderId, total: r.total };
+                return { ok: false, error: (r && r.error) || 'unknown' };
+            } catch (e) {
+                return { ok: false, error: String(e && e.message || e) };
+            }
+        }
+
+        function setSubmitBusy(busy) {
+            const btn = document.getElementById('btn-submit-order');
+            if (!btn) return;
+            btn.disabled = busy;
+            btn.innerText = busy ? 'กำลังส่ง...' : 'ยืนยันการสั่งซื้อ';
+        }
+
         async function submitOrder() {
+            if (isSubmitting) return;
+            isSubmitting = true;
+            setSubmitBusy(true);
+            try {
+                await doSubmitOrder();
+            } finally {
+                isSubmitting = false;
+                setSubmitBusy(false);
+            }
+        }
+
+        async function doSubmitOrder() {
             if (!Object.keys(cart).length) { alert('กรุณาเลือกสินค้าอย่างน้อย 1 รายการค่ะ'); return; }
 
             const phone = document.getElementById('cust-phone').value.trim();
@@ -772,63 +903,31 @@
                 localStorage.setItem('poksai_addr', address);
             } catch(e) {}
 
+            const lines = buildCartLines();
+            if (!lines.length) { alert('กรุณาเลือกสินค้าอย่างน้อย 1 รายการค่ะ'); return; }
+
             let total = 0;
-            const itemsCloud = [];
             let itemsText = '';
-
-            for (const [id, q] of Object.entries(cart)) {
-                const it = itemDict[id];
-                if (!it) continue;
-                const cost = it.price * q;
+            lines.forEach(l => {
+                const cost = l.price * l.qty;
                 total += cost;
-
-                const sauces = (cartSauces[id] || []).slice(0, q);
-                let sDetail = '';
-                if (sauces.length > 0) {
-                    const valid = sauces.filter(s => s && !s.includes('ไม่รับ'));
-                    if (valid.length > 0) sDetail = ` (${valid.join(', ')})`;
-                }
-                itemsText += `• ${it.name} x${q}${sDetail} = ${cost}฿\n`;
-                itemsCloud.push({ id: it.id, name: it.name, price: it.price, qty: q, sauces: sauces });
-            }
+                const sDetail = l.sauces.length ? ` (${l.sauces.join(', ')})` : '';
+                itemsText += `• ${l.name} x${l.qty}${sDetail} = ${cost}฿\n`;
+            });
 
             const isLiff = (typeof liff !== 'undefined' && liff.isInClient() && liff.isLoggedIn());
             const channel = isLiff ? 'LINE' : 'Web / Facebook';
 
-            try {
-                const cloudUrl = `${ORDER_API_URL}?action=createOrder`
-                    + `&name=${encodeURIComponent(name)}`
-                    + `&phone=${encodeURIComponent(phone)}`
-                    + `&address=${encodeURIComponent(address)}`
-                    + `&note=${encodeURIComponent(note)}`
-                    + `&items=${encodeURIComponent(JSON.stringify(itemsCloud))}`
-                    + `&total=${encodeURIComponent(total)}`
-                    + `&channel=${encodeURIComponent(channel)}`;
-                await fetch(cloudUrl, { mode: 'no-cors' });
-            } catch(e) {}
-
-            if (isLiff) {
-                const lineMsg = `🍉 ใบสั่งซื้อร้าน ปอกใส่ปาก\n`
-                              + `ลูกค้า: คุณ ${name}\n`
-                              + `เบอร์โทร: ${phone}\n`
-                              + `สถานที่ส่ง: ${address}\n`
-                              + (note ? `หมายเหตุ: ${note}\n` : '')
-                              + `--------------------\n`
-                              + `${itemsText}`
-                              + `--------------------\n`
-                              + `ยอดรวมค่าสินค้า: ${total} บาท\n`
-                              + `** ยังไม่รวมค่าจัดส่ง **\n`
-                              + `รบกวนรอทางร้านยืนยันคำสั่งซื้อค่ะ`;
-                try {
-                    await liff.sendMessages([{ type: 'text', text: lineMsg }]);
-                    alert('ส่งรายการสั่งซื้อเรียบร้อยแล้ว');
-                    liff.closeWindow();
-                    return;
-                } catch(e) {}
+            const cloud = await sendOrderToCloud({
+                name: name, phone: phone, address: address, note: note, channel: channel,
+                items: lines.map(l => ({ id: l.id, name: l.name, price: l.price, qty: l.qty, sauces: l.sauces }))
+            });
+            if (cloud.ok && Number(cloud.total) !== total) {
+                console.warn('ยอดจากเซิร์ฟเวอร์ไม่ตรงกับหน้าเว็บ', cloud.total, total);
             }
 
-            clipboardText = `🍉 ใบสั่งซื้อร้าน ปอกใส่ปาก\n`
-                          + `ลูกค้า: คุณ ${name}\n`
+            const refLine = cloud.ok ? `รหัสออเดอร์: ${cloud.orderId}\n` : '';
+            const msgBody = `ลูกค้า: คุณ ${name}\n`
                           + `เบอร์โทร: ${phone}\n`
                           + `สถานที่ส่ง: ${address}\n`
                           + (note ? `หมายเหตุ: ${note}\n` : '')
@@ -837,9 +936,32 @@
                           + `--------------------\n`
                           + `ยอดรวมค่าสินค้า: ${total} บาท\n`
                           + `** ยังไม่รวมค่าจัดส่ง **\n`
+                          + refLine
                           + `รบกวนรอทางร้านยืนยันคำสั่งซื้อค่ะ`;
+            const fullMsg = `🍉 ใบสั่งซื้อร้าน ปอกใส่ปาก\n` + msgBody;
 
+            if (isLiff) {
+                try {
+                    await liff.sendMessages([{ type: 'text', text: fullMsg }]);
+                    alert('ส่งรายการสั่งซื้อเรียบร้อยแล้ว');
+                    liff.closeWindow();
+                    return;
+                } catch(e) {}
+            }
+
+            clipboardText = fullMsg;
             document.getElementById('order-clipboard-box').innerText = clipboardText;
+
+            const warn = document.getElementById('order-cloud-warning');
+            const title = document.getElementById('order-success-title');
+            if (cloud.ok) {
+                title.innerText = 'บันทึกออเดอร์เรียบร้อยแล้วค่ะ!';
+                warn.style.display = 'none';
+            } else {
+                title.innerText = 'เตรียมรายการสั่งซื้อแล้วค่ะ';
+                warn.innerText = 'ระบบยังไม่ยืนยันว่าบันทึกออเดอร์สำเร็จ กรุณากดปุ่มด้านล่างเพื่อส่งรายการให้แอดมินทางแชทด้วยนะคะ';
+                warn.style.display = 'block';
+            }
             document.getElementById('order-success-modal').style.display = 'flex';
         }
 
