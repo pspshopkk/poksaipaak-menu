@@ -168,11 +168,6 @@
             padding: 10px 12px; font-size: 14.5px; background: #fff;
         }
         .form-row input:focus, .form-row textarea:focus { outline: none; border-color: var(--c-primary); }
-        .suggest-tag {
-            display: none; background: #eef9f5; border: 1px solid var(--c-mint);
-            color: #1a5b4c; font-size: 13px; font-weight: 600; padding: 6px 10px;
-            border-radius: var(--radius-sm); margin-top: 5px;
-        }
 
         .store-policy {
             margin: 24px auto 0 auto; padding: 14px 16px; font-size: 13.5px;
@@ -268,16 +263,15 @@
             <h3>ข้อมูลการจัดส่ง</h3>
             <div class="form-row">
                 <label>เบอร์โทรศัพท์ติดต่อ <span style="color:var(--c-primary);">*</span></label>
-                <input type="tel" id="cust-phone" maxlength="12" placeholder="0xx-xxx-xxxx" oninput="handlePhoneInput(this)">
-                <div id="cust-suggest-badge" class="suggest-tag"></div>
+                <input type="tel" id="cust-phone" maxlength="12" placeholder="0xx-xxx-xxxx" autocomplete="tel" inputmode="tel" oninput="handlePhoneInput(this)">
             </div>
             <div class="form-row">
                 <label>ชื่อลูกค้า <span style="color:var(--c-primary);">*</span></label>
-                <input type="text" id="cust-name" placeholder="ระบุชื่อจริงหรือชื่อเรียก">
+                <input type="text" id="cust-name" placeholder="ระบุชื่อจริงหรือชื่อเรียก" autocomplete="name" oninput="markTyped('name', this)">
             </div>
             <div class="form-row">
                 <label>สถานที่จัดส่ง <span style="color:var(--c-primary);">*</span></label>
-                <textarea id="cust-address" rows="2" placeholder="บ้านเลขที่, ถนน/ซอย, จุดสังเกต หรือพิกัดจัดส่ง"></textarea>
+                <textarea id="cust-address" rows="2" placeholder="บ้านเลขที่, ถนน/ซอย, จุดสังเกต หรือพิกัดจัดส่ง" autocomplete="street-address" oninput="markTyped('addr', this)"></textarea>
             </div>
             <div class="form-row">
                 <label>หมายเหตุเพิ่มเติม (ถ้ามี)</label>
@@ -375,7 +369,7 @@
     </div>
 
     <script>
-        const MENU_API_URL = 'https://script.google.com/macros/s/AKfycbyaPiqWEQhgM7nxSTDj67DU_8TsWVu36aJNLagaQ33OBRKGErUyiA2x3M9YiMF7kuvL/exec';
+        const MENU_API_URL = 'https://script.google.com/macros/s/AKfycbyQYkZ_hTjm6OWusr74xDWF3IOuH4LBxSS2bTDyWfOMpslYC1Rcd0UHYDvCQBoS0RTj/exec';
         const ORDER_API_URL = 'https://script.google.com/macros/s/AKfycbyQYkZ_hTjm6OWusr74xDWF3IOuH4LBxSS2bTDyWfOMpslYC1Rcd0UHYDvCQBoS0RTj/exec';
         const MY_LIFF_ID = '2011847809-BCDUYMKz';
         const FB_PAGE_URL = 'https://m.me/poksai.pak';
@@ -458,15 +452,17 @@
             return d;
         }
 
+        // ช่องที่ลูกค้าพิมพ์เองในหน้านี้ (ไม่นับค่าที่ระบบเติมให้) ข้อมูลจากเบอร์จะไม่ทับช่องเหล่านี้
+        const typedByUser = { name: false, addr: false };
+        function markTyped(which, el) { typedByUser[which] = String(el.value || '').trim() !== ''; }
+
+        // เบอร์ตรงกับลูกค้าเดิม: เติมชื่อและที่อยู่ให้เลย (ทับค่าที่จำไว้ในเครื่อง/ชื่อโปรไฟล์ LINE) แบบเงียบ ๆ ไม่แสดงข้อความ
         function applyCustomer(c, digits) {
-            const badge = document.getElementById('cust-suggest-badge');
-            if (!c) { badge.style.display = 'none'; return; }
+            if (!c) return;
             const nameEl = document.getElementById('cust-name');
             const addrEl = document.getElementById('cust-address');
-            if (c.name && !nameEl.value) nameEl.value = c.name;
-            if (c.address && !addrEl.value) addrEl.value = c.address;
-            badge.innerText = `✓ พบข้อมูลเดิม: คุณ ${c.name || 'ลูกค้าประจำ'} (ดึงที่อยู่ให้อัตโนมัติ)`;
-            badge.style.display = 'block';
+            if (c.name && !typedByUser.name) nameEl.value = c.name;
+            if (c.address && !typedByUser.addr) addrEl.value = c.address;
         }
 
         // ค้นหาลูกค้าทีละเบอร์ (ไม่โหลดรายชื่อลูกค้าทั้งหมดลงเครื่องผู้ใช้)
@@ -486,10 +482,9 @@
         function handlePhoneInput(el) {
             el.value = formatPhone(el.value);
             const digits = el.value.replace(/\D/g, '');
-            const badge = document.getElementById('cust-suggest-badge');
             clearTimeout(lookupTimer);
 
-            if (digits.length < 9) { badge.style.display = 'none'; return; }
+            if (digits.length < 9) return;
             if (Object.prototype.hasOwnProperty.call(customerDB, digits)) { applyCustomer(customerDB[digits], digits); return; }
             lookupTimer = setTimeout(() => lookupCustomerByPhone(digits), 450);
         }
@@ -517,7 +512,7 @@
 
         async function loadMenu() {
             try {
-                const res = await fetch(`${MENU_API_URL}?t=${Date.now()}`);
+                const res = await fetch(`${MENU_API_URL}?action=getData&t=${Date.now()}`);
                 const data = await res.json();
                 if (!Array.isArray(data) || data.length === 0) throw new Error('Data empty');
 
@@ -959,7 +954,7 @@
                 warn.style.display = 'none';
             } else {
                 title.innerText = 'เตรียมรายการสั่งซื้อแล้วค่ะ';
-                warn.innerText = 'ระบบยังไม่ยืนยันว่าบันทึกออเดอร์สำเร็จ กรุณากดปุ่มด้านล่างเพื่อส่งรายการให้แอดมินทางแชทด้วยนะคะ';
+                warn.innerText = 'ขออภัยค่ะ ออเดอร์ยังส่งถึงร้านไม่สำเร็จ กรุณากดปุ่มด้านล่างเพื่อส่งรายการให้ร้านทางแชทแทนนะคะ';
                 warn.style.display = 'block';
             }
             document.getElementById('order-success-modal').style.display = 'flex';
